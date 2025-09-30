@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Freelancer | Final</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .input-group { margin-bottom: 1rem; }
+        .input-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #9CA3AF; }
+        .input-field { width: 100%; background-color: #374151; border: 1px solid #4B5563; color: #F9FAFB; border-radius: 0.5rem; padding: 0.75rem; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
+        .input-field:focus { outline: none; border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
+        .dynamic-list-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .btn-primary { background-color: #3B82F6; color: white; }
+        .btn-primary:hover { background-color: #2563EB; }
+        .btn-success { background-color: #10B981; color: white; }
+        .btn-success:hover { background-color: #059669; }
+        .btn-danger { background-color: #EF4444; color: white; }
+        .btn-danger:hover { background-color: #DC2626; }
+        .dashboard-card { background-color: #1F2937; border: 1px solid #374151; padding: 1.5rem; border-radius: 0.75rem; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+        .dashboard-card:hover { transform: translateY(-4px); border-color: #3B82F6; }
+        .dashboard-value { font-size: 2rem; font-weight: 700; color: #3B82F6; }
+        .dashboard-label { font-size: 0.9rem; color: #9CA3AF; }
+        .checkbox-label { display: flex; align-items: center; font-size: 0.875rem; color: #D1D5DB; cursor: pointer; }
+        .checkbox { width: 1rem; height: 1rem; margin-right: 0.5rem; border-radius: 0.25rem; background-color: #4B5563; border: none; }
+        .checkbox:checked { background-color: #3B82F6; }
+        .tab-btn.active { border-color: #3B82F6; color: #60A5FA; }
+        .tab-btn { border-color: transparent; color: #9CA3AF; }
+        .modal-overlay.hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+        
+        <section id="dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8 sticky top-4 bg-gray-900/80 backdrop-blur-sm z-10 py-4">
+            <div id="card-valor-hora" class="dashboard-card">
+                <div id="display-valor-hora" class="dashboard-value">R$ 0,00</div>
+                <div class="dashboard-label">Seu Valor de Venda / Hora</div>
+            </div>
+            <div id="card-custo-empresarial" class="dashboard-card">
+                <div id="display-custo-empresarial" class="dashboard-value">R$ 0,00</div>
+                <div class="dashboard-label">Custo Fixo Empresarial</div>
+            </div>
+            <div id="card-custo-pessoal" class="dashboard-card">
+                <div id="display-custo-pessoal" class="dashboard-value">R$ 0,00</div>
+                <div class="dashboard-label">Custo Fixo Pessoal</div>
+            </div>
+            <div id="card-faturamento" class="dashboard-card">
+                <div id="display-faturamento" class="dashboard-value">R$ 0,00</div>
+                <div class="dashboard-label">Meta de Faturação Ideal</div>
+            </div>
+        </section>
+        
+        <div class="flex flex-wrap justify-center border-b border-gray-700 mb-8">
+            <button id="tab-pessoal" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2 active">Pessoal</button>
+            <button id="tab-profissional" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2">Profissional</button>
+            <button id="tab-calculator" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2">Calculadora de Projetos</button>
+            <button id="tab-reports" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2">Relatórios</button>
+        </div>
+
+        <main id="view-pessoal">
+             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h2 class="text-2xl font-bold mb-4">1. Despesas Pessoais e Partilhadas</h2>
+                        <p class="text-gray-400 mb-4">Adicione as suas despesas mensais. Marque as que também são usadas para o seu trabalho (home office).</p>
+                        <div id="despesas-pessoais-list" class="mb-4"></div>
+                        <button id="add-despesa-pessoal" class="btn btn-primary text-sm">+ Adicionar Despesa</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h2 class="text-2xl font-bold mb-4">2. Metas Pessoais (Sua Remuneração)</h2>
+                        <div class="input-group"><label for="ajuda-custo" class="input-label">Ajuda de Custo / VR</label><input type="number" id="ajuda-custo" class="input-field" placeholder="770"></div>
+                        <div class="input-group"><label for="lazer" class="input-label">Meta Mensal de Lazer/Variáveis</label><input type="number" id="lazer" class="input-field" placeholder="1000"></div>
+                        <div class="input-group"><label for="investimento" class="input-label">Meta Mensal de Investimento</label><input type="number" id="investimento" class="input-field" placeholder="500"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <main id="view-profissional" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <div class="bg-gray-800 p-6 rounded-lg mb-8">
+                        <h2 class="text-2xl font-bold mb-4">3. Custos 100% Profissionais</h2>
+                        <p class="text-gray-400 mb-4">Adicione despesas que são exclusivas do seu trabalho.</p>
+                        <div id="custos-profissionais-list" class="mb-4"></div>
+                        <button id="add-custo-profissional" class="btn btn-primary text-sm">+ Adicionar Custo</button>
+                    </div>
+                     <div class="bg-gray-800 p-6 rounded-lg mb-8">
+                        <h2 class="text-2xl font-bold mb-4">4. Depreciação de Equipamentos</h2>
+                        <div id="depreciacao-list" class="mb-4"></div>
+                        <button id="add-depreciacao" class="btn btn-primary text-sm">+ Adicionar Equipamento</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="bg-gray-800 p-6 rounded-lg mb-8">
+                        <h2 class="text-2xl font-bold mb-4">5. Parâmetros Profissionais</h2>
+                        <h3 class="font-semibold text-lg mb-3 text-gray-300">Home Office</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="input-group"><label for="area-escritorio" class="input-label">Área do Escritório (m²)</label><input type="number" id="area-escritorio" class="input-field" placeholder="16"></div>
+                            <div class="input-group"><label for="area-total" class="input-label">Área Total da Casa (m²)</label><input type="number" id="area-total" class="input-field" placeholder="86"></div>
+                        </div>
+                         <h3 class="font-semibold text-lg mt-6 mb-3 text-gray-300">Jornada de Trabalho</h3>
+                        <div class="input-group"><label for="horas-semana" class="input-label">Horas de trabalho por semana</label><input type="number" id="horas-semana" class="input-field" value="40"></div>
+                        <div class="input-group">
+                            <label for="tempo-nao-faturavel" class="input-label">Tempo não-faturável: <span id="tempo-nao-faturavel-label" class="font-bold text-blue-400">30%</span></label>
+                            <input type="range" id="tempo-nao-faturavel" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="30">
+                        </div>
+                        <div class="input-group">
+                            <label for="margem-lucro" class="input-label">Margem de Lucro desejada: <span id="margem-lucro-label" class="font-bold text-blue-400">30%</span></label>
+                            <input type="range" id="margem-lucro" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="30">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <section id="view-calculator" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h2 class="text-2xl font-bold mb-4">Calcular Novo Projeto</h2>
+                    <div class="input-group">
+                        <label for="project-name" class="input-label">Nome do Projeto</label>
+                        <input type="text" id="project-name" class="input-field" placeholder="Ex: Website Institucional">
+                    </div>
+
+                    <h3 class="font-semibold text-lg mb-3 mt-6 text-gray-300">Lista de Tarefas do Projeto</h3>
+                    <div id="project-tasks-list"></div>
+                    <button id="add-project-task" class="btn btn-primary text-sm mt-2">+ Adicionar Tarefa</button>
+                    
+                    <div class="input-group mt-6">
+                        <label for="project-buffer" class="input-label">Buffer de Segurança para Imprevistos: <span id="project-buffer-label" class="font-bold text-blue-400">20%</span></label>
+                        <input type="range" id="project-buffer" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="20">
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-lg sticky top-4 flex flex-col">
+                    <div class="flex-grow">
+                        <h2 class="text-2xl font-bold mb-6 text-center">Preço Sugerido para o Projeto</h2>
+                        <div class="text-center mb-6">
+                            <div id="project-price" class="text-5xl font-bold text-blue-400">R$ 0,00</div>
+                            <div id="project-total-hours" class="text-gray-400 mt-2">Total de 0 horas (com buffer)</div>
+                        </div>
+                        
+                        <h3 class="text-xl font-semibold mb-4 text-center">Detalhamento do Preço</h3>
+                        <div class="space-y-3 text-lg">
+                            <div class="flex justify-between p-3 bg-gray-700/50 rounded-lg">
+                                <span class="text-gray-300">Custos da Empresa:</span>
+                                <span id="project-breakdown-cost" class="font-semibold">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between p-3 bg-gray-700/50 rounded-lg">
+                                <span class="text-gray-300">Sua Remuneração:</span>
+                                <span id="project-breakdown-remuneration" class="font-semibold">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between p-3 bg-gray-700/50 rounded-lg">
+                                <span class="text-gray-300">Lucro:</span>
+                                <span id="project-breakdown-profit" class="font-semibold text-green-400">R$ 0,00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-center">
+                        <button id="save-project-btn" class="btn btn-success text-lg w-full">Salvar Projeto</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <main id="view-reports" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Relatório de Projetos</h2>
+                <div id="reports-filter-container"></div>
+            </div>
+            <div id="reports-container" class="space-y-8"></div>
+        </main>
+    </div>
+
+    <!-- Lightbox/Modal Structures -->
+    <div id="lightbox-overlay" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 id="lightbox-title" class="text-xl font-bold"></h2>
+                <button id="lightbox-close" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div id="lightbox-content" class="p-6 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-sm p-6 text-center">
+             <h2 id="confirmation-title" class="text-xl font-bold mb-4">Confirmar Exclusão</h2>
+             <p id="confirmation-message" class="text-gray-300 mb-6">Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.</p>
+             <div class="flex justify-center gap-4">
+                <button id="confirm-cancel-btn" class="btn bg-gray-600 hover:bg-gray-500 text-white">Cancelar</button>
+                <button id="confirm-delete-btn" class="btn btn-danger">Excluir</button>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        window.es_module_shims = true;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = { 
+                valorHoraVenda: 0, 
+                custoPorHora: 0, 
+                remuneracaoPorHora: 0,
+                faturamentoIdeal: 0,
+                editingProjectId: null,
+                breakdown: {} 
+            };
+            const { jsPDF } = window.jspdf;
+            const formatCurrency = value => (parseFloat(value) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            const parseTimeToDecimal = (timeStr) => {
+                if (!timeStr) return 0;
+                if (typeof timeStr === 'number') return timeStr;
+                if (!String(timeStr).includes(':')) {
+                    const val = parseFloat(String(timeStr).replace(',', '.'));
+                    return isNaN(val) ? 0 : val;
+                }
+                const parts = String(timeStr).split(':');
+                const hours = parseInt(parts[0], 10) || 0;
+                const minutes = parseInt(parts[1], 10) || 0;
+                return hours + (minutes / 60);
+            };
+
+            const formatDecimalToTime = (decimalHours) => {
+                if (isNaN(decimalHours) || decimalHours === null) return '';
+                const totalMinutes = Math.round(decimalHours * 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            };
+
+
+            const lightboxOverlay = document.getElementById('lightbox-overlay');
+            const lightboxTitle = document.getElementById('lightbox-title');
+            const lightboxContent = document.getElementById('lightbox-content');
+            const lightboxClose = document.getElementById('lightbox-close');
+            const confirmationModal = document.getElementById('confirmation-modal');
+            
+            const showLightbox = (data) => {
+                if (typeof data === 'string') {
+                    const cardType = data;
+                    data = state.breakdown[cardType];
+                }
+                if (!data || !data.title || !data.content) return;
+                lightboxTitle.textContent = data.title;
+                lightboxContent.innerHTML = data.content;
+                lightboxOverlay.classList.remove('hidden');
+            };
+
+            const hideLightbox = () => lightboxOverlay.classList.add('hidden');
+            lightboxClose.addEventListener('click', hideLightbox);
+            lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) hideLightbox(); });
+
+            const showConfirmationModal = (title, message, onConfirm) => {
+                confirmationModal.querySelector('#confirmation-title').textContent = title;
+                confirmationModal.querySelector('#confirmation-message').textContent = message;
+                confirmationModal.classList.remove('hidden');
+
+                const confirmBtn = confirmationModal.querySelector('#confirm-delete-btn');
+                const cancelBtn = confirmationModal.querySelector('#confirm-cancel-btn');
+
+                const confirmHandler = () => {
+                    onConfirm();
+                    hideConfirmationModal();
+                    cleanup();
+                };
+                const cancelHandler = () => {
+                    hideConfirmationModal();
+                    cleanup();
+                }
+                const cleanup = () => {
+                    confirmBtn.removeEventListener('click', confirmHandler);
+                    cancelBtn.removeEventListener('click', cancelHandler);
+                };
+                
+                confirmBtn.addEventListener('click', confirmHandler);
+                cancelBtn.addEventListener('click', cancelHandler);
+            };
+            const hideConfirmationModal = () => confirmationModal.classList.add('hidden');
+
+            const tabs = { pessoal: document.getElementById('tab-pessoal'), profissional: document.getElementById('tab-profissional'), calculator: document.getElementById('tab-calculator'), reports: document.getElementById('tab-reports') };
+            const views = { pessoal: document.getElementById('view-pessoal'), profissional: document.getElementById('view-profissional'), calculator: document.getElementById('view-calculator'), reports: document.getElementById('view-reports') };
+            const switchView = viewName => {
+                Object.keys(views).forEach(key => {
+                    views[key].classList.add('hidden');
+                    tabs[key].classList.remove('active');
+                });
+                views[viewName].classList.remove('hidden');
+                tabs[viewName].classList.add('active');
+                if (viewName === 'reports') renderReports();
+            };
+            Object.keys(tabs).forEach(key => tabs[key].addEventListener('click', () => switchView(key)));
+
+            const createDespesaPessoalItem = (nome = '', valor = '', isCompartilhado = false) => {
+                const list = document.getElementById('despesas-pessoais-list');
+                const item = document.createElement('div');
+                item.className = 'dynamic-list-item';
+                item.innerHTML = `
+                    <input type="text" class="input-field flex-grow" placeholder="Nome da Despesa" value="${nome}">
+                    <input type="number" class="input-field w-32" placeholder="Valor" value="${valor}">
+                    <label class="checkbox-label"><input type="checkbox" class="checkbox" ${isCompartilhado ? 'checked' : ''}> Partilhado</label>
+                    <button class="btn btn-danger text-xs px-2 py-1">&times;</button>
+                `;
+                list.appendChild(item);
+                item.querySelectorAll('input').forEach(el => el.addEventListener('input', calculateAll));
+                item.querySelector('button').addEventListener('click', () => { item.remove(); calculateAll(); });
+            };
+
+            const createCustoProfissionalItem = (nome = '', valor = '') => {
+                 const list = document.getElementById('custos-profissionais-list');
+                 const item = document.createElement('div');
+                 item.className = 'dynamic-list-item';
+                 item.innerHTML = `
+                    <input type="text" class="input-field flex-grow" placeholder="Nome do Custo" value="${nome}">
+                    <input type="number" class="input-field w-32" placeholder="Valor" value="${valor}">
+                    <button class="btn btn-danger text-xs px-2 py-1">&times;</button>
+                 `;
+                 list.appendChild(item);
+                 item.querySelectorAll('input').forEach(el => el.addEventListener('input', calculateAll));
+                 item.querySelector('button').addEventListener('click', () => { item.remove(); calculateAll(); });
+            };
+
+            const createDepreciacaoItem = (nome = '', valor = '', vidaUtil = '') => {
+                 const list = document.getElementById('depreciacao-list');
+                 const item = document.createElement('div');
+                 item.className = 'dynamic-list-item';
+                 item.innerHTML = `
+                    <input type="text" class="input-field flex-grow" placeholder="Equipamento" value="${nome}">
+                    <input type="number" class="input-field w-32" placeholder="Custo" value="${valor}">
+                    <input type="number" class="input-field w-32" placeholder="Vida útil (anos)" value="${vidaUtil}">
+                    <button class="btn btn-danger text-xs px-2 py-1">&times;</button>
+                 `;
+                 list.appendChild(item);
+                 item.querySelectorAll('input').forEach(el => el.addEventListener('input', calculateAll));
+                 item.querySelector('button').addEventListener('click', () => { item.remove(); calculateAll(); });
+            };
+            
+            document.getElementById('add-despesa-pessoal').addEventListener('click', () => createDespesaPessoalItem());
+            document.getElementById('add-custo-profissional').addEventListener('click', () => createCustoProfissionalItem());
+            document.getElementById('add-depreciacao').addEventListener('click', () => createDepreciacaoItem());
+
+            const projectBufferInput = document.getElementById('project-buffer');
+            
+            const createProjectTaskItem = (nome = '', horas = '') => {
+                const list = document.getElementById('project-tasks-list');
+                const item = document.createElement('div');
+                item.className = 'dynamic-list-item';
+                item.innerHTML = `
+                    <input type="text" class="input-field flex-grow" placeholder="Descrição da tarefa" value="${nome}">
+                    <input type="text" class="input-field w-28" placeholder="00:00" value="${horas}">
+                    <button class="btn btn-danger text-xs px-2 py-1">&times;</button>
+                `;
+                list.appendChild(item);
+                item.querySelectorAll('input').forEach(el => el.addEventListener('input', calculateProject));
+                item.querySelector('button').addEventListener('click', () => { item.remove(); calculateProject(); });
+            };
+
+            document.getElementById('add-project-task').addEventListener('click', () => createProjectTaskItem());
+
+            const calculateProject = () => {
+                const totalHorasBase = Array.from(document.querySelectorAll('#project-tasks-list .dynamic-list-item')).reduce((acc, item) => {
+                    const timeStr = item.querySelectorAll('input')[1].value;
+                    return acc + parseTimeToDecimal(timeStr);
+                }, 0);
+                
+                const percBuffer = parseFloat(projectBufferInput.value) / 100;
+                const totalHorasComBuffer = totalHorasBase * (1 + percBuffer);
+                const precoProjeto = totalHorasComBuffer * state.valorHoraVenda;
+
+                const custoProjeto = totalHorasComBuffer * state.custoPorHora;
+                const remuneracaoProjeto = totalHorasComBuffer * state.remuneracaoPorHora;
+                const lucroProjeto = precoProjeto - custoProjeto - remuneracaoProjeto;
+
+                document.getElementById('project-price').textContent = formatCurrency(precoProjeto);
+                document.getElementById('project-total-hours').textContent = `Total de ${totalHorasComBuffer.toFixed(2)} horas (${formatDecimalToTime(totalHorasComBuffer)}) com buffer`;
+                document.getElementById('project-breakdown-cost').textContent = formatCurrency(custoProjeto);
+                document.getElementById('project-breakdown-remuneration').textContent = formatCurrency(remuneracaoProjeto);
+                document.getElementById('project-breakdown-profit').textContent = formatCurrency(lucroProjeto);
+                document.getElementById('project-buffer-label').textContent = `${projectBufferInput.value}%`;
+            };
+            
+            projectBufferInput.addEventListener('input', calculateProject);
+
+            const saveProjectBtn = document.getElementById('save-project-btn');
+            
+            const saveProject = () => {
+                const projectName = document.getElementById('project-name').value || 'Projeto sem nome';
+                const tasks = Array.from(document.querySelectorAll('#project-tasks-list .dynamic-list-item')).map(item => {
+                    return {
+                        name: item.querySelectorAll('input')[0].value,
+                        hours: parseTimeToDecimal(item.querySelectorAll('input')[1].value)
+                    };
+                }).filter(task => task.hours > 0);
+
+                if (tasks.length === 0) {
+                    alert('Adicione pelo menos uma tarefa com horas para salvar o projeto.');
+                    return;
+                }
+                
+                const bufferPercent = parseFloat(document.getElementById('project-buffer').value);
+                const totalHorasBase = tasks.reduce((acc, task) => acc + task.hours, 0);
+                const totalHorasComBuffer = totalHorasBase * (1 + bufferPercent / 100);
+                
+                const price = totalHorasComBuffer * state.valorHoraVenda;
+                const cost = totalHorasComBuffer * state.custoPorHora;
+                const remuneration = totalHorasComBuffer * state.remuneracaoPorHora;
+                const profit = price - cost - remuneration;
+
+                const projectData = {
+                    name: projectName,
+                    date: new Date().toISOString(),
+                    tasks,
+                    bufferPercent,
+                    totalHours: totalHorasComBuffer,
+                    price,
+                    breakdown: { cost, remuneration, profit },
+                    metricsSnapshot: {
+                        valorHoraVenda: state.valorHoraVenda,
+                        metaFaturamentoIdeal: state.faturamentoIdeal
+                    }
+                };
+
+                let projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
+                if (state.editingProjectId) {
+                    const index = projects.findIndex(p => p.id === state.editingProjectId);
+                    if (index !== -1) {
+                        projects[index] = { ...projects[index], ...projectData };
+                    }
+                    alert(`Projeto "${projectName}" atualizado com sucesso!`);
+                    state.editingProjectId = null;
+                } else {
+                    projectData.id = Date.now();
+                    projects.push(projectData);
+                    alert(`Projeto "${projectName}" salvo com sucesso!`);
+                }
+                
+                localStorage.setItem('freelancerProjects', JSON.stringify(projects));
+                document.getElementById('save-project-btn').textContent = 'Salvar Projeto';
+            };
+
+            saveProjectBtn.addEventListener('click', saveProject);
+
+            const editProject = (projectId) => {
+                const projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
+                const project = projects.find(p => p.id === projectId);
+                if (!project) return;
+
+                state.editingProjectId = projectId;
+                document.getElementById('project-name').value = project.name;
+                document.getElementById('project-buffer').value = project.bufferPercent;
+                
+                const taskList = document.getElementById('project-tasks-list');
+                taskList.innerHTML = '';
+                project.tasks.forEach(task => createProjectTaskItem(task.name, formatDecimalToTime(task.hours)));
+                
+                document.getElementById('save-project-btn').textContent = 'Salvar Alterações';
+                switchView('calculator');
+                calculateProject();
+            };
+
+            const deleteProject = (projectId) => {
+                showConfirmationModal('Confirmar Exclusão', 'Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.', () => {
+                    let projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
+                    projects = projects.filter(p => p.id !== projectId);
+                    localStorage.setItem('freelancerProjects', JSON.stringify(projects));
+                    renderReports();
+                });
+            };
+
+            const downloadReportAsPDF = (month) => {
+                const reportElement = document.querySelector(`.report-month[data-month-id="${month}"]`);
+                if (!reportElement) return;
+
+                html2canvas(reportElement, { backgroundColor: '#111827' }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(`relatorio_${month.replace(/ /g, '_').toLowerCase()}.pdf`);
+                });
+            };
+
+            const renderReports = (filterMonth = 'all') => {
+                const reportsContainer = document.getElementById('reports-container');
+                const filterContainer = document.getElementById('reports-filter-container');
+                const projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
+                
+                reportsContainer.innerHTML = '';
+                filterContainer.innerHTML = '';
+
+                if (projects.length === 0) {
+                    reportsContainer.innerHTML = '<p class="text-center text-gray-400">Ainda não há projetos salvos.</p>';
+                    return;
+                }
+                
+                const uniqueMonths = [...new Set(projects.map(p => new Date(p.date).toLocaleString('pt-BR', { year: 'numeric', month: 'long' })))].sort((a,b) => new Date(b.split(' de ').reverse().join('-')) - new Date(a.split(' de ').reverse().join('-')));
+                
+                const filterSelect = document.createElement('select');
+                filterSelect.className = 'input-field';
+                filterSelect.innerHTML = `<option value="all">Todos os Meses</option>${uniqueMonths.map(m => `<option value="${m}" ${filterMonth === m ? 'selected' : ''}>${m}</option>`).join('')}`;
+                filterContainer.appendChild(filterSelect);
+                filterSelect.addEventListener('change', (e) => renderReports(e.target.value));
+
+                const filteredProjects = projects.filter(p => filterMonth === 'all' || new Date(p.date).toLocaleString('pt-BR', { year: 'numeric', month: 'long' }) === filterMonth);
+
+                const groupedByMonth = filteredProjects.reduce((acc, project) => {
+                    const month = new Date(project.date).toLocaleString('pt-BR', { year: 'numeric', month: 'long' });
+                    if (!acc[month]) acc[month] = [];
+                    acc[month].push(project);
+                    return acc;
+                }, {});
+
+                for (const month of uniqueMonths) {
+                    if (groupedByMonth[month]) {
+                        const monthProjects = groupedByMonth[month];
+                        const totalFaturado = monthProjects.reduce((sum, p) => sum + p.price, 0);
+                        const totalLucro = monthProjects.reduce((sum, p) => sum + p.breakdown.profit, 0);
+                        const metaDoMes = monthProjects[0].metricsSnapshot.metaFaturamentoIdeal || state.faturamentoIdeal;
+                        const progressoMeta = metaDoMes > 0 ? (totalFaturado / metaDoMes) * 100 : 0;
+
+                        const monthElement = document.createElement('div');
+                        monthElement.className = 'bg-gray-800 p-6 rounded-lg report-month';
+                        monthElement.setAttribute('data-month-id', month);
+                        monthElement.innerHTML = `
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-2xl font-bold capitalize">${month}</h2>
+                                <button data-month-id="${month}" class="btn btn-primary text-sm download-pdf-btn">Baixar PDF</button>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="bg-gray-700/50 p-4 rounded-lg text-center">
+                                    <div class="text-3xl font-bold text-green-400">${formatCurrency(totalFaturado)}</div>
+                                    <div class="text-gray-400">Faturado</div>
+                                </div>
+                                <div class="bg-gray-700/50 p-4 rounded-lg text-center">
+                                    <div class="text-3xl font-bold text-yellow-400">${formatCurrency(totalLucro)}</div>
+                                    <div class="text-gray-400">Lucro</div>
+                                </div>
+                                <div class="bg-gray-700/50 p-4 rounded-lg text-center">
+                                    <div class="text-3xl font-bold text-blue-400">${progressoMeta.toFixed(0)}%</div>
+                                    <div class="text-gray-400">da Meta (${formatCurrency(metaDoMes)})</div>
+                                </div>
+                            </div>
+                            <h3 class="font-semibold text-lg mb-3 text-gray-300">Projetos Salvos</h3>
+                            <ul class="space-y-2">
+                                ${monthProjects.map(p => `
+                                    <li class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                        <span class="cursor-pointer hover:text-blue-400 project-details-btn" data-project-id="${p.id}">${p.name}</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-semibold">${formatCurrency(p.price)}</span>
+                                            <button data-project-id="${p.id}" class="btn-primary p-2 rounded edit-btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
+                                            </button>
+                                            <button data-project-id="${p.id}" class="btn-danger p-2 rounded delete-btn">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                        reportsContainer.appendChild(monthElement);
+                    }
+                }
+
+                document.querySelectorAll('.project-details-btn').forEach(el => el.addEventListener('click', (e) => {
+                    const projectId = parseInt(e.currentTarget.getAttribute('data-project-id'));
+                    const project = projects.find(p => p.id === projectId);
+                    if(project) showLightbox({ 
+                        title: `Detalhes: ${project.name}`, 
+                        content: `
+                            <div class="space-y-4">
+                                <h3 class="font-semibold text-lg text-blue-400">Tarefas</h3>
+                                <ul class="list-disc list-inside text-gray-300">
+                                    ${project.tasks.map(t => `<li>${t.name || 'Tarefa sem nome'}: ${formatDecimalToTime(t.hours)}</li>`).join('')}
+                                </ul>
+                                <p><strong>Total de Horas (com ${project.bufferPercent}% de buffer):</strong> ${project.totalHours.toFixed(2)}h (${formatDecimalToTime(project.totalHours)})</p>
+                                <hr class="border-gray-700">
+                                <h3 class="font-semibold text-lg text-blue-400">Detalhamento do Preço</h3>
+                                <ul class="list-disc list-inside text-gray-300">
+                                    <li>Custos da Empresa: ${formatCurrency(project.breakdown.cost)}</li>
+                                    <li>Sua Remuneração: ${formatCurrency(project.breakdown.remuneration)}</li>
+                                    <li>Lucro: ${formatCurrency(project.breakdown.profit)}</li>
+                                </ul>
+                                <p class="text-right font-bold mt-2 text-2xl">${formatCurrency(project.price)}</p>
+                            </div>
+                        ` 
+                    });
+                }));
+                 document.querySelectorAll('.edit-btn').forEach(el => el.addEventListener('click', (e) => editProject(parseInt(e.currentTarget.getAttribute('data-project-id')))));
+                 document.querySelectorAll('.delete-btn').forEach(el => el.addEventListener('click', (e) => deleteProject(parseInt(e.currentTarget.getAttribute('data-project-id')))));
+                 document.querySelectorAll('.download-pdf-btn').forEach(el => el.addEventListener('click', (e) => downloadReportAsPDF(e.currentTarget.getAttribute('data-month-id'))));
+            };
+
+            const saveData = () => {
+                const dataToSave = {
+                    despesasPessoais: [], custosProfissionais: [], depreciacao: [], metas: {}, parametros: {}
+                };
+
+                document.querySelectorAll('#despesas-pessoais-list .dynamic-list-item').forEach(item => {
+                    dataToSave.despesasPessoais.push({
+                        nome: item.querySelectorAll('input')[0].value,
+                        valor: item.querySelectorAll('input')[1].value,
+                        isCompartilhado: item.querySelectorAll('input')[2].checked
+                    });
+                });
+                document.querySelectorAll('#custos-profissionais-list .dynamic-list-item').forEach(item => {
+                    dataToSave.custosProfissionais.push({ nome: item.querySelectorAll('input')[0].value, valor: item.querySelectorAll('input')[1].value });
+                });
+                document.querySelectorAll('#depreciacao-list .dynamic-list-item').forEach(item => {
+                    dataToSave.depreciacao.push({ nome: item.querySelectorAll('input')[0].value, valor: item.querySelectorAll('input')[1].value, vidaUtil: item.querySelectorAll('input')[2].value });
+                });
+
+                dataToSave.metas = {
+                    ajudaCusto: document.getElementById('ajuda-custo').value,
+                    lazer: document.getElementById('lazer').value,
+                    investimento: document.getElementById('investimento').value
+                };
+                dataToSave.parametros = {
+                    areaEscritorio: document.getElementById('area-escritorio').value,
+                    areaTotal: document.getElementById('area-total').value,
+                    horasSemana: document.getElementById('horas-semana').value,
+                    tempoNaoFaturavel: document.getElementById('tempo-nao-faturavel').value,
+                    margemLucro: document.getElementById('margem-lucro').value
+                };
+                
+                localStorage.setItem('freelancerAppData', JSON.stringify(dataToSave));
+            };
+
+            const calculateAll = () => {
+                let totalDespesasGeral = 0, totalCustosCompartilhados = 0;
+                document.querySelectorAll('#despesas-pessoais-list .dynamic-list-item').forEach(item => {
+                    const valor = parseFloat(item.querySelectorAll('input')[1].value) || 0;
+                    totalDespesasGeral += valor;
+                    if (item.querySelector('input[type="checkbox"]').checked) totalCustosCompartilhados += valor;
+                });
+
+                const areaEscritorio = parseFloat(document.getElementById('area-escritorio').value) || 0;
+                const areaTotal = parseFloat(document.getElementById('area-total').value) || 1;
+                const fatorRateio = areaTotal > 0 ? areaEscritorio / areaTotal : 0;
+                const custoHomeOffice = totalCustosCompartilhados * fatorRateio;
+
+                const custos100ProfissionaisList = [];
+                let custos100Profissionais = 0;
+                document.querySelectorAll('#custos-profissionais-list .dynamic-list-item').forEach(item => {
+                    const nome = item.querySelectorAll('input')[0].value || 'Custo sem nome';
+                    const valor = parseFloat(item.querySelectorAll('input')[1].value) || 0;
+                    if (valor > 0) {
+                        custos100Profissionais += valor;
+                        custos100ProfissionaisList.push({ nome, valor });
+                    }
+                });
+                
+                const depreciacaoList = [];
+                const totalDepreciacao = Array.from(document.querySelectorAll('#depreciacao-list .dynamic-list-item')).reduce((acc, item) => {
+                    const nome = item.querySelectorAll('input')[0].value || 'Equipamento sem nome';
+                    const custo = parseFloat(item.querySelectorAll('input')[1].value) || 0;
+                    const vidaUtilAnos = parseFloat(item.querySelectorAll('input')[2].value) || 1;
+                    const valorMensal = vidaUtilAnos > 0 ? custo / (vidaUtilAnos * 12) : 0;
+                    if (valorMensal > 0) depreciacaoList.push({ nome, valorMensal });
+                    return acc + valorMensal;
+                }, 0);
+
+                const custoFixoEmpresarial = custos100Profissionais + custoHomeOffice + totalDepreciacao;
+                const custoFixoPessoal = totalDespesasGeral - custoHomeOffice;
+                const ajudaCusto = parseFloat(document.getElementById('ajuda-custo').value) || 0;
+                const lazer = parseFloat(document.getElementById('lazer').value) || 0;
+                const investimento = parseFloat(document.getElementById('investimento').value) || 0;
+                const remuneracaoIdeal = custoFixoPessoal + ajudaCusto + lazer + investimento;
+
+                const horasSemana = parseFloat(document.getElementById('horas-semana').value) || 40;
+                const percNaoFaturavel = parseFloat(document.getElementById('tempo-nao-faturavel').value) / 100;
+                const percMargemLucro = parseFloat(document.getElementById('margem-lucro').value) / 100;
+                const horasFaturaveisMes = (horasSemana * (1 - percNaoFaturavel)) * 4.33;
+                const custoTotalMensal = custoFixoEmpresarial + remuneracaoIdeal;
+                const custoTotalPorHora = horasFaturaveisMes > 0 ? custoTotalMensal / horasFaturaveisMes : 0;
+                
+                state.valorHoraVenda = (1 - percMargemLucro) > 0 ? custoTotalPorHora / (1 - percMargemLucro) : custoTotalPorHora;
+                state.custoPorHora = horasFaturaveisMes > 0 ? custoFixoEmpresarial / horasFaturaveisMes : 0;
+                state.remuneracaoPorHora = horasFaturaveisMes > 0 ? remuneracaoIdeal / horasFaturaveisMes : 0;
+                state.faturamentoIdeal = state.valorHoraVenda * horasFaturaveisMes;
+
+                document.getElementById('display-valor-hora').textContent = formatCurrency(state.valorHoraVenda);
+                document.getElementById('display-custo-empresarial').textContent = formatCurrency(custoFixoEmpresarial);
+                document.getElementById('display-custo-pessoal').textContent = formatCurrency(custoFixoPessoal);
+                document.getElementById('display-faturamento').textContent = formatCurrency(state.faturamentoIdeal);
+                document.getElementById('tempo-nao-faturavel-label').textContent = `${(percNaoFaturavel * 100).toFixed(0)}%`;
+                document.getElementById('margem-lucro-label').textContent = `${(percMargemLucro * 100).toFixed(0)}%`;
+                
+                state.breakdown.custoEmpresarial = {
+                    title: 'Detalhamento do Custo Fixo Empresarial',
+                    content: `
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Custos 100% Profissionais</h3>
+                                <ul class="list-disc list-inside text-gray-300">${custos100ProfissionaisList.map(item => `<li>${item.nome}: ${formatCurrency(item.valor)}</li>`).join('') || '<li>Nenhum</li>'}</ul>
+                                <p class="text-right font-bold mt-1">${formatCurrency(custos100Profissionais)}</p>
+                            </div>
+                            <hr class="border-gray-700">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Custos de Home Office</h3>
+                                <p>Total de despesas partilhadas: ${formatCurrency(totalCustosCompartilhados)}</p>
+                                <p>Fator de rateio (área): ${(fatorRateio * 100).toFixed(1)}%</p>
+                                <p class="text-right font-bold mt-1">${formatCurrency(custoHomeOffice)}</p>
+                            </div>
+                            <hr class="border-gray-700">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Depreciação de Equipamentos</h3>
+                                <ul class="list-disc list-inside text-gray-300">${depreciacaoList.map(item => `<li>${item.nome}: ${formatCurrency(item.valorMensal)}</li>`).join('') || '<li>Nenhum</li>'}</ul>
+                                <p class="text-right font-bold mt-1">${formatCurrency(totalDepreciacao)}</p>
+                            </div>
+                        </div>
+                    `
+                };
+                 state.breakdown.custoPessoal = {
+                    title: 'Detalhamento do Custo Fixo Pessoal',
+                    content: `
+                         <div class="space-y-4">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Total de Despesas</h3>
+                                <p>Soma de todas as despesas listadas na aba "Pessoal".</p>
+                                <p class="text-right font-bold mt-1">${formatCurrency(totalDespesasGeral)}</p>
+                            </div>
+                            <hr class="border-gray-700">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(-) Parcela Profissional (Home Office)</h3>
+                                <p>Parte das despesas partilhadas que é alocada como custo da empresa.</p>
+                                <p class="text-right font-bold mt-1">${formatCurrency(-custoHomeOffice)}</p>
+                            </div>
+                             <hr class="border-gray-600 my-4">
+                             <div class="flex justify-between items-center text-xl">
+                                <strong>Custo Pessoal Fixo Total:</strong>
+                                <strong class="text-blue-400">${formatCurrency(custoFixoPessoal)}</strong>
+                             </div>
+                        </div>
+                    `
+                };
+                state.breakdown.faturamentoIdeal = {
+                    title: 'Cálculo da Meta de Faturação Ideal',
+                     content: `
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Remuneração Pessoal Ideal</h3>
+                                <ul class="list-disc list-inside text-gray-300">
+                                    <li>Custo Fixo Pessoal: ${formatCurrency(custoFixoPessoal)}</li>
+                                    <li>Ajuda de Custo (VR): ${formatCurrency(ajudaCusto)}</li>
+                                    <li>Meta de Lazer: ${formatCurrency(lazer)}</li>
+                                    <li>Meta de Investimento: ${formatCurrency(investimento)}</li>
+                                </ul>
+                                <p class="text-right font-bold mt-1">${formatCurrency(remuneracaoIdeal)}</p>
+                            </div>
+                            <hr class="border-gray-700">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(+) Custo Fixo Empresarial</h3>
+                                 <p class="text-right font-bold mt-1">${formatCurrency(custoFixoEmpresarial)}</p>
+                            </div>
+                             <hr class="border-gray-700">
+                             <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(=) Custo Total (antes do lucro)</h3>
+                                 <p class="text-right font-bold mt-1">${formatCurrency(custoTotalMensal)}</p>
+                            </div>
+                            <hr class="border-gray-700">
+                            <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(&divide;) Fator de Lucro</h3>
+                                <p>O custo total representa ${100 - (percMargemLucro * 100)}% do preço final.</p>
+                                 <p class="text-right font-bold mt-1">&divide; ${(1 - percMargemLucro).toFixed(2)}</p>
+                            </div>
+                            <hr class="border-gray-600 my-4">
+                            <div class="flex justify-between items-center text-xl">
+                                <strong>Meta de Faturação Total:</strong>
+                                <strong class="text-blue-400">${formatCurrency(state.faturamentoIdeal)}</strong>
+                             </div>
+                        </div>
+                    `
+                };
+                 state.breakdown.valorHora = {
+                    title: 'Cálculo do Valor de Venda por Hora',
+                     content: `
+                        <div class="space-y-4">
+                           <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Cálculo das Horas Faturáveis</h3>
+                                <p>${horasSemana} horas/semana &times; 4.33 semanas = ${(horasSemana * 4.33).toFixed(1)} horas totais/mês</p>
+                                <p>(-) ${(percNaoFaturavel * 100).toFixed(0)}% de tempo não-faturável</p>
+                                <p class="text-right font-bold mt-1">${horasFaturaveisMes.toFixed(1)} horas faturáveis/mês</p>
+                           </div>
+                           <hr class="border-gray-700">
+                           <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Fórmula do Valor/Hora</h3>
+                                <p>Meta de Faturação Ideal / Horas Faturáveis</p>
+                                <p>${formatCurrency(state.faturamentoIdeal)} / ${horasFaturaveisMes.toFixed(1)}h</p>
+                                <p class="text-right font-bold mt-1">${formatCurrency(state.valorHoraVenda)}</p>
+                           </div>
+                           <hr class="border-gray-700">
+                           <div>
+                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Detalhamento do Valor/Hora</h3>
+                                <ul class="list-disc list-inside text-gray-300">
+                                    <li>Para Custos da Empresa: ${formatCurrency(state.custoPorHora)}</li>
+                                    <li>Para Sua Remuneração: ${formatCurrency(state.remuneracaoPorHora)}</li>
+                                    <li>Para Lucro: ${formatCurrency(state.valorHoraVenda - state.custoPorHora - state.remuneracaoPorHora)}</li>
+                                </ul>
+                           </div>
+                        </div>
+                    `
+                };
+
+                calculateProject();
+                saveData();
+            };
+            
+            const loadData = () => {
+                const data = JSON.parse(localStorage.getItem('freelancerAppData'));
+                if (!data) {
+                    createDespesaPessoalItem();
+                    createCustoProfissionalItem();
+                    createDepreciacaoItem();
+                    return;
+                }
+
+                if (data.despesasPessoais && data.despesasPessoais.length > 0) data.despesasPessoais.forEach(d => createDespesaPessoalItem(d.nome, d.valor, d.isCompartilhado)); else createDespesaPessoalItem();
+                if (data.custosProfissionais && data.custosProfissionais.length > 0) data.custosProfissionais.forEach(d => createCustoProfissionalItem(d.nome, d.valor)); else createCustoProfissionalItem();
+                if (data.depreciacao && data.depreciacao.length > 0) data.depreciacao.forEach(d => createDepreciacaoItem(d.nome, d.valor, d.vidaUtil)); else createDepreciacaoItem();
+
+                if (data.metas) {
+                    document.getElementById('ajuda-custo').value = data.metas.ajudaCusto || '';
+                    document.getElementById('lazer').value = data.metas.lazer || '';
+                    document.getElementById('investimento').value = data.metas.investimento || '';
+                }
+                if (data.parametros) {
+                    document.getElementById('area-escritorio').value = data.parametros.areaEscritorio || '';
+                    document.getElementById('area-total').value = data.parametros.areaTotal || '';
+                    document.getElementById('horas-semana').value = data.parametros.horasSemana || '40';
+                    document.getElementById('tempo-nao-faturavel').value = data.parametros.tempoNaoFaturavel || '30';
+                    document.getElementById('margem-lucro').value = data.parametros.margemLucro || '30';
+                }
+            };
+            
+            const init = () => {
+                loadData();
+                createProjectTaskItem();
+                
+                const staticInputs = ['ajuda-custo', 'lazer', 'investimento', 'area-escritorio', 'area-total', 'horas-semana', 'tempo-nao-faturavel', 'margem-lucro'];
+                staticInputs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.addEventListener('input', calculateAll);
+                });
+
+                document.getElementById('card-valor-hora').addEventListener('click', () => showLightbox('valorHora'));
+                document.getElementById('card-custo-empresarial').addEventListener('click', () => showLightbox('custoEmpresarial'));
+                document.getElementById('card-custo-pessoal').addEventListener('click', () => showLightbox('custoPessoal'));
+                document.getElementById('card-faturamento').addEventListener('click', () => showLightbox('faturamentoIdeal'));
+
+                calculateAll();
+                renderReports();
+            };
+            init();
+        });
+    </script>
+</body>
+</html>
+
