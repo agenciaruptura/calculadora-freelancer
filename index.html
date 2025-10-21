@@ -5,80 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora Freelancer | Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Mulish', sans-serif;
+            background-color: #242424;
+            color: #F9F8F8;
+        }
+        .card {
+            background-color: #242424;
+            border: 1px solid rgba(249, 248, 248, 0.1);
+        }
         .input-group { margin-bottom: 1rem; }
-        .input-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #9CA3AF; }
-        .input-field { width: 100%; background-color: #374151; border: 1px solid #4B5563; color: #F9FAFB; border-radius: 0.5rem; padding: 0.75rem; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
-        .input-field:focus { outline: none; border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); }
+        .input-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 400; color: #F9F8F8; }
+        .input-field { width: 100%; background-color: #242424; border: 1px solid rgba(249, 248, 248, 0.3); color: #F9F8F8; border-radius: 0.5rem; padding: 0.75rem; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
+        .input-field:focus { outline: none; border-color: #E52922; box-shadow: 0 0 0 3px rgba(229, 41, 34, 0.5); }
         .dynamic-list-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
-        .btn-primary { background-color: #3B82F6; color: white; }
-        .btn-primary:hover { background-color: #2563EB; }
-        .btn-success { background-color: #10B981; color: white; }
-        .btn-success:hover { background-color: #059669; }
-        .btn-danger { background-color: #EF4444; color: white; }
-        .btn-danger:hover { background-color: #DC2626; }
-        .dashboard-card { background-color: #1F2937; border: 1px solid #374151; padding: 1.5rem; border-radius: 0.75rem; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
-        .dashboard-card:hover { transform: translateY(-4px); border-color: #3B82F6; }
-        .dashboard-value { font-size: 2rem; font-weight: 700; color: #3B82F6; }
-        .dashboard-label { font-size: 0.9rem; color: #9CA3AF; }
-        .checkbox-label { display: flex; align-items: center; font-size: 0.875rem; color: #D1D5DB; cursor: pointer; }
-        .checkbox { width: 1rem; height: 1rem; margin-right: 0.5rem; border-radius: 0.25rem; background-color: #4B5563; border: none; }
-        .checkbox:checked { background-color: #3B82F6; }
-        .tab-btn.active { border-color: #3B82F6; color: #60A5FA; }
-        .tab-btn { border-color: transparent; color: #9CA3AF; }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 700; cursor: pointer; transition: filter 0.2s, opacity 0.2s, background-color 0.2s, color 0.2s; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background-color: #E52922; color: #F9F8F8; }
+        .btn-primary:hover:not(:disabled) { filter: brightness(110%); }
+        .btn-success { background-color: #242424; color: #F9F8F8; border: 1px solid #F9F8F8; }
+        .btn-success:hover:not(:disabled) { background-color: #F9F8F8; color: #242424; }
+        .btn-danger { background-color: #E52922; color: #F9F8F8; }
+        .btn-danger:hover:not(:disabled) { filter: brightness(110%); }
+        .dashboard-card { background-color: #242424; border: 1px solid rgba(249, 248, 248, 0.1); padding: 1.5rem; border-radius: 0.75rem; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+        .dashboard-card:hover { transform: translateY(-4px); border-color: #E52922; }
+        .dashboard-value { font-size: 2rem; font-weight: 900; color: #E52922; }
+        .dashboard-label { font-size: 0.9rem; color: #F9F8F8; opacity: 0.7; }
+        .checkbox-label { display: flex; align-items: center; font-size: 0.875rem; color: #F9F8F8; cursor: pointer; }
+        .checkbox { width: 1rem; height: 1rem; margin-right: 0.5rem; border-radius: 0.25rem; background-color: #242424; border: 1px solid rgba(249, 248, 248, 0.3); }
+        .checkbox:checked { background-color: #E52922; border-color: #E52922; }
+        .tab-btn.active { border-color: #E52922; color: #E52922; opacity: 1; }
+        .tab-btn { border-color: transparent; color: #F9F8F8; opacity: 0.6; }
         .modal-overlay.hidden { display: none; }
+        
+        [data-tooltip] { position: relative; cursor: help; }
+        [data-tooltip]::after { content: attr(data-tooltip); position: absolute; left: 50%; transform: translateX(-50%); bottom: 100%; margin-bottom: 8px; background: #242424; color: #F9F8F8; padding: 8px 12px; border-radius: 6px; font-size: 0.875rem; white-space: nowrap; z-index: 10; opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s; border: 1px solid #E52922; }
+        [data-tooltip]:hover::after { opacity: 1; visibility: visible; }
+        
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { display: flex; align-items: center; gap: 0.5rem; padding: 1rem 1.5rem; border-radius: 0.5rem; color: #F9F8F8; font-weight: 700; transform: translateX(120%); opacity: 0; transition: transform 0.4s ease-out, opacity 0.4s ease-out; }
+        .toast.show { transform: translateX(0); opacity: 1; }
+        .toast.success { background-color: #242424; border: 1px solid #F9F8F8; }
+        .toast.error, .toast.info { background-color: #E52922; }
+
+        /* Custom Slider Styles */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: rgba(249, 248, 248, 0.1);
+            border-radius: 5px;
+            outline: none;
+            padding: 0;
+        }
+        input[type="range"]:focus {
+            box-shadow: none; 
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #E52922;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #242424;
+            margin-top: -6px;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #E52922;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #242424;
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 antialiased">
+<body class="antialiased">
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
         
-        <section id="dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8 sticky top-4 bg-gray-900/80 backdrop-blur-sm z-10 py-4">
-            <div id="card-valor-hora" class="dashboard-card">
+        <section id="dashboard" class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8 py-4">
+            <div id="card-valor-hora" class="dashboard-card" data-tooltip="Seu preço de venda final por hora, incluindo custos, remuneração e lucro.">
                 <div id="display-valor-hora" class="dashboard-value">R$ 0,00</div>
                 <div class="dashboard-label">Seu Valor de Venda / Hora</div>
             </div>
-            <div id="card-custo-empresarial" class="dashboard-card">
+            <div id="card-custo-empresarial" class="dashboard-card" data-tooltip="Soma de todos os custos para manter seu negócio funcionando.">
                 <div id="display-custo-empresarial" class="dashboard-value">R$ 0,00</div>
                 <div class="dashboard-label">Custo Fixo Empresarial</div>
             </div>
-            <div id="card-custo-pessoal" class="dashboard-card">
+            <div id="card-custo-pessoal" class="dashboard-card" data-tooltip="Suas despesas pessoais que precisam ser cobertas pela sua remuneração.">
                 <div id="display-custo-pessoal" class="dashboard-value">R$ 0,00</div>
                 <div class="dashboard-label">Custo Fixo Pessoal</div>
             </div>
-            <div id="card-faturamento" class="dashboard-card">
+            <div id="card-faturamento" class="dashboard-card" data-tooltip="Sua meta de faturamento mensal para cobrir todos os custos e atingir sua margem de lucro.">
                 <div id="display-faturamento" class="dashboard-value">R$ 0,00</div>
                 <div class="dashboard-label">Meta de Faturação Ideal</div>
             </div>
         </section>
         
-        <div class="flex flex-wrap justify-center border-b border-gray-700 mb-8">
-            <button id="tab-pessoal" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2 active">Pessoal</button>
-            <button id="tab-profissional" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2">Profissional</button>
-            <button id="tab-calculator" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2">Calculadora de Projetos</button>
-            <button id="tab-reports" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-medium border-b-2">Relatórios</button>
+        <div class="flex flex-wrap justify-center border-b border-[#F9F8F8]/10 mb-8">
+            <button id="tab-pessoal" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-bold border-b-2 active">Pessoal</button>
+            <button id="tab-profissional" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-bold border-b-2">Profissional</button>
+            <button id="tab-precificacao" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-bold border-b-2">Precificação</button>
+            <button id="tab-calculator" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-bold border-b-2">Calculadora de Projetos</button>
+            <button id="tab-reports" class="tab-btn px-4 sm:px-6 py-3 text-base sm:text-lg font-bold border-b-2">Relatórios</button>
         </div>
 
         <main id="view-pessoal">
              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <div class="bg-gray-800 p-6 rounded-lg">
-                        <h2 class="text-2xl font-bold mb-4">1. Despesas Pessoais e Partilhadas</h2>
-                        <p class="text-gray-400 mb-4">Adicione as suas despesas mensais. Marque as que também são usadas para o seu trabalho (home office).</p>
+                    <div class="p-6 rounded-lg card">
+                        <h2 class="text-2xl font-black mb-4">1. Despesas Pessoais e Partilhadas</h2>
+                        <p class="font-light opacity-70 mb-4">Adicione as suas despesas mensais. Marque as que também são usadas para o seu trabalho (home office).</p>
                         <div id="despesas-pessoais-list" class="mb-4"></div>
                         <button id="add-despesa-pessoal" class="btn btn-primary text-sm">+ Adicionar Despesa</button>
                     </div>
                 </div>
                 <div>
-                    <div class="bg-gray-800 p-6 rounded-lg">
-                        <h2 class="text-2xl font-bold mb-4">2. Metas Pessoais (Sua Remuneração)</h2>
+                    <div class="p-6 rounded-lg card">
+                        <h2 class="text-2xl font-black mb-4">2. Metas Pessoais (Sua Remuneração)</h2>
                         <div class="input-group"><label for="ajuda-custo" class="input-label">Ajuda de Custo / VR</label><input type="number" id="ajuda-custo" class="input-field" placeholder="770"></div>
                         <div class="input-group"><label for="lazer" class="input-label">Meta Mensal de Lazer/Variáveis</label><input type="number" id="lazer" class="input-field" placeholder="1000"></div>
                         <div class="input-group"><label for="investimento" class="input-label">Meta Mensal de Investimento</label><input type="number" id="investimento" class="input-field" placeholder="500"></div>
@@ -89,120 +144,211 @@
         <main id="view-profissional" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <div class="bg-gray-800 p-6 rounded-lg mb-8">
-                        <h2 class="text-2xl font-bold mb-4">3. Custos 100% Profissionais</h2>
-                        <p class="text-gray-400 mb-4">Adicione despesas que são exclusivas do seu trabalho.</p>
+                    <div class="p-6 rounded-lg mb-8 card">
+                        <h2 class="text-2xl font-black mb-4">3. Custos 100% Profissionais</h2>
+                        <p class="font-light opacity-70 mb-4">Adicione despesas que são exclusivas do seu trabalho.</p>
                         <div id="custos-profissionais-list" class="mb-4"></div>
                         <button id="add-custo-profissional" class="btn btn-primary text-sm">+ Adicionar Custo</button>
                     </div>
-                     <div class="bg-gray-800 p-6 rounded-lg mb-8">
-                        <h2 class="text-2xl font-bold mb-4">4. Depreciação de Equipamentos</h2>
+                     <div class="p-6 rounded-lg mb-8 card">
+                        <h2 class="text-2xl font-black mb-4">4. Depreciação de Equipamentos</h2>
                         <div id="depreciacao-list" class="mb-4"></div>
                         <button id="add-depreciacao" class="btn btn-primary text-sm">+ Adicionar Equipamento</button>
                     </div>
                 </div>
                 <div>
-                    <div class="bg-gray-800 p-6 rounded-lg mb-8">
-                        <h2 class="text-2xl font-bold mb-4">5. Parâmetros Profissionais</h2>
-                        <h3 class="font-semibold text-lg mb-3 text-gray-300">Home Office</h3>
+                    <div class="p-6 rounded-lg mb-8 card">
+                        <h2 class="text-2xl font-black mb-4">5. Parâmetros Profissionais</h2>
+                        <h3 class="font-bold text-lg mb-3">Home Office</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="input-group"><label for="area-escritorio" class="input-label">Área do Escritório (m²)</label><input type="number" id="area-escritorio" class="input-field" placeholder="16"></div>
                             <div class="input-group"><label for="area-total" class="input-label">Área Total da Casa (m²)</label><input type="number" id="area-total" class="input-field" placeholder="86"></div>
                         </div>
-                         <h3 class="font-semibold text-lg mt-6 mb-3 text-gray-300">Jornada de Trabalho</h3>
+                         <h3 class="font-bold text-lg mt-6 mb-3">Jornada de Trabalho</h3>
                         <div class="input-group"><label for="horas-semana" class="input-label">Horas de trabalho por semana</label><input type="number" id="horas-semana" class="input-field" value="40"></div>
                         <div class="input-group">
-                            <label for="tempo-nao-faturavel" class="input-label">Tempo não-faturável: <span id="tempo-nao-faturavel-label" class="font-bold text-blue-400">30%</span></label>
-                            <input type="range" id="tempo-nao-faturavel" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="30">
+                            <label for="tempo-nao-faturavel" class="input-label" data-tooltip="Percentual de tempo gasto em reuniões, prospecção, etc., que não é faturado diretamente.">Tempo não-faturável: <span id="tempo-nao-faturavel-label" class="font-bold text-[#E52922]">30%</span></label>
+                            <input type="range" id="tempo-nao-faturavel" min="0" max="100" value="30">
                         </div>
                         <div class="input-group">
-                            <label for="margem-lucro" class="input-label">Margem de Lucro desejada: <span id="margem-lucro-label" class="font-bold text-blue-400">30%</span></label>
-                            <input type="range" id="margem-lucro" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="30">
+                            <label for="margem-lucro" class="input-label" data-tooltip="O percentual do preço final que será lucro líquido, após todos os custos e remuneração serem pagos.">Margem de Lucro desejada: <span id="margem-lucro-label" class="font-bold text-[#E52922]">30%</span></label>
+                            <input type="range" id="margem-lucro" min="0" max="100" value="30">
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-        <section id="view-calculator" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-gray-800 p-6 rounded-lg">
-                    <h2 class="text-2xl font-bold mb-4">Calcular Novo Projeto</h2>
-                    <div class="input-group">
-                        <label for="project-name" class="input-label">Nome do Projeto</label>
-                        <input type="text" id="project-name" class="input-field" placeholder="Ex: Website Institucional">
+        
+        <main id="view-precificacao" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2">
+                    <div class="p-6 rounded-lg card">
+                        <h2 class="text-2xl font-black mb-4">Gerador de Pacotes de Precificação</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="input-group"><label for="pkg-name" class="input-label">Nome do Pacote</label><input type="text" id="pkg-name" name="pkg-name" class="input-field" placeholder="Ex: Pacote Mídias Sociais Q4"></div>
+                            <div class="input-group"><label for="pkg-client" class="input-label">Cliente/Projeto (Opcional)</label><input type="text" id="pkg-client" name="pkg-client" class="input-field" placeholder="Ex: Agência XYZ"></div>
+                        </div>
+                        <div class="input-group"><label for="pkg-desc" class="input-label">Descrição</label><textarea id="pkg-desc" name="pkg-desc" class="input-field" rows="2" placeholder="Descreva o escopo principal do pacote..."></textarea></div>
+                        
+                        <h3 class="font-bold text-lg mb-3 mt-6">Itens do Pacote</h3>
+                        <div id="pkg-items-container" class="space-y-3"></div>
+                        <button id="add-pkg-item-btn" class="btn btn-primary text-sm mt-2">+ Adicionar Item</button>
+
+                        <h3 class="font-bold text-lg mb-3 mt-8">Parâmetros do Pacote</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div class="input-group">
+                                <label for="pkg-buffer" class="input-label" data-tooltip="Margem de segurança em horas para cobrir imprevistos em todo o pacote.">Buffer do Pacote (%)</label>
+                                <input type="number" id="pkg-buffer" name="pkg-buffer" class="input-field" value="30">
+                            </div>
+                            <div class="input-group">
+                                <label for="pkg-markup" class="input-label" data-tooltip="Multiplicador sobre o custo para definir o preço mínimo. Ex: 1.6 = Custo + 60%">Markup (x)</label>
+                                <input type="number" step="0.1" id="pkg-markup" name="pkg-markup" class="input-field" value="1.6">
+                            </div>
+                        </div>
+
+                        <div class="input-group mt-4">
+                             <label for="pkg-notes" class="input-label">Notas e Histórico de Negociação</label>
+                             <textarea id="pkg-notes" name="pkg-notes" class="input-field" rows="3" placeholder="Registre observações, acordos e objeções do cliente aqui..."></textarea>
+                        </div>
+
+                        <button type="button" id="generate-pricing-btn" class="btn btn-primary w-full mt-4">Gerar Valores</button>
                     </div>
 
-                    <h3 class="font-semibold text-lg mb-3 mt-6 text-gray-300">Lista de Tarefas do Projeto</h3>
+                    <div class="p-6 rounded-lg mt-8 card">
+                        <h3 class="text-xl font-bold mb-4">Resultado do Pacote</h3>
+                        <div id="pricing-alert-container" class="mb-4"></div>
+                        <div class="space-y-3 text-lg">
+                            <div class="flex justify-between p-3 bg-black/20 rounded-lg" data-tooltip="O custo total para você executar o trabalho (custo empresarial + sua remuneração), incluindo o buffer.">
+                                <span class="opacity-80">Custo Real (R$):</span>
+                                <span id="pricing-result-cost" class="font-bold">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between p-3 bg-black/20 rounded-lg" data-tooltip="Seu ponto de equilíbrio, calculado como Custo Real x Markup. Vender abaixo disso gera prejuízo.">
+                                <span class="opacity-80">Preço Mínimo (R$):</span>
+                                <span id="pricing-result-min" class="font-bold">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-black/20 rounded-lg" data-tooltip="Preço justo baseado no seu valor/hora, que já inclui sua margem de lucro ideal.">
+                                <span class="opacity-80">Preço Ideal (R$):</span>
+                                <span id="pricing-result-ideal" class="font-black text-[#E52922] text-2xl">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <button id="save-package-btn" class="btn btn-success w-full mt-6">✔ Salvar Pacote</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="p-6 rounded-lg card mb-8">
+                        <h2 class="text-2xl font-black mb-4">Gerenciar Tipos de Itens</h2>
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="new-item-type-name" name="new-item-type-name" class="input-field" placeholder="Ex: Vídeo de Portfólio">
+                            <button id="add-new-item-type-btn" class="btn btn-primary whitespace-nowrap">Adicionar</button>
+                        </div>
+                        <div id="item-types-list" class="space-y-2 pr-2">
+                            <!-- A lista de itens será populada via JS -->
+                        </div>
+                         <button id="restore-default-items-btn" class="btn btn-success text-xs w-full mt-4 opacity-80 hover:opacity-100">Restaurar Itens Padrão</button>
+                    </div>
+
+                    <div class="p-6 rounded-lg card">
+                        <h2 class="text-2xl font-black mb-4">Pacotes Salvos</h2>
+                        <input type="text" id="search-packages" name="search-packages" class="input-field mb-4" placeholder="Buscar por nome ou cliente...">
+                        <div id="saved-packages-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <section id="view-calculator" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="p-6 rounded-lg card">
+                    <h2 class="text-2xl font-black mb-4">Calcular Novo Projeto</h2>
+                    <div class="input-group">
+                        <label for="project-package-select" class="input-label" data-tooltip="Selecione um pacote de precificação para preencher as tarefas e o buffer automaticamente.">Selecionar Pacote (Opcional)</label>
+                        <select id="project-package-select" name="project-package-select" class="input-field">
+                            <option value="">Nenhum pacote selecionado</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="project-name" class="input-label">Nome do Projeto</label>
+                        <input type="text" id="project-name" name="project-name" class="input-field" placeholder="Ex: Website Institucional">
+                    </div>
+
+                    <h3 class="font-bold text-lg mb-3 mt-6">Lista de Tarefas do Projeto</h3>
                     <div id="project-tasks-list"></div>
                     <button id="add-project-task" class="btn btn-primary text-sm mt-2">+ Adicionar Tarefa</button>
                     
                     <div class="input-group mt-6">
-                        <label for="project-buffer" class="input-label">Buffer de Segurança para Imprevistos: <span id="project-buffer-label" class="font-bold text-blue-400">20%</span></label>
-                        <input type="range" id="project-buffer" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="20">
+                        <label for="project-buffer" class="input-label" data-tooltip="Uma margem de segurança em horas para cobrir imprevistos e retrabalho.">Buffer de Segurança para Imprevistos: <span id="project-buffer-label" class="font-bold text-[#E52922]">20%</span></label>
+                        <input type="range" id="project-buffer" name="project-buffer" min="0" max="100" value="20">
                     </div>
                 </div>
 
-                <div class="bg-gray-800 p-6 rounded-lg sticky top-4 flex flex-col">
+                <div class="p-6 rounded-lg flex flex-col card">
                     <div class="flex-grow">
-                        <h2 class="text-2xl font-bold mb-6 text-center">Preço Sugerido para o Projeto</h2>
+                        <h2 class="text-2xl font-black mb-6 text-center">Preço Sugerido para o Projeto</h2>
                         <div class="text-center mb-6">
-                            <div id="project-price" class="text-5xl font-bold text-blue-400">R$ 0,00</div>
-                            <div id="project-total-hours" class="text-gray-400 mt-2">Total de 0 horas (com buffer)</div>
+                            <div id="project-price" class="text-5xl font-black text-[#E52922]">R$ 0,00</div>
+                            <div id="project-total-hours" class="opacity-70 mt-2 font-light">Total de 0 horas (com buffer)</div>
+                            <div id="project-price-alert-container" class="mt-4 text-sm"></div>
                         </div>
                         
-                        <h3 class="text-xl font-semibold mb-4 text-center">Detalhamento do Preço</h3>
+                        <h3 class="text-xl font-bold mb-4 text-center">Detalhamento do Preço</h3>
                         <div class="space-y-3 text-lg">
-                            <div class="flex justify-between p-3 bg-gray-700/50 rounded-lg">
-                                <span class="text-gray-300">Custos da Empresa:</span>
-                                <span id="project-breakdown-cost" class="font-semibold">R$ 0,00</span>
+                            <div class="flex justify-between p-3 bg-black/20 rounded-lg">
+                                <span class="opacity-80">Custos da Empresa:</span>
+                                <span id="project-breakdown-cost" class="font-bold">R$ 0,00</span>
                             </div>
-                            <div class="flex justify-between p-3 bg-gray-700/50 rounded-lg">
-                                <span class="text-gray-300">Sua Remuneração:</span>
-                                <span id="project-breakdown-remuneration" class="font-semibold">R$ 0,00</span>
+                            <div class="flex justify-between p-3 bg-black/20 rounded-lg">
+                                <span class="opacity-80">Sua Remuneração:</span>
+                                <span id="project-breakdown-remuneration" class="font-bold">R$ 0,00</span>
                             </div>
-                            <div class="flex justify-between p-3 bg-gray-700/50 rounded-lg">
-                                <span class="text-gray-300">Lucro:</span>
-                                <span id="project-breakdown-profit" class="font-semibold text-green-400">R$ 0,00</span>
+                            <div class="flex justify-between p-3 bg-black/20 rounded-lg">
+                                <span class="opacity-80">Lucro:</span>
+                                <span id="project-breakdown-profit" class="font-bold text-[#E52922]">R$ 0,00</span>
                             </div>
                         </div>
                     </div>
                     <div class="mt-8 text-center">
-                        <button id="save-project-btn" class="btn btn-success text-lg w-full">Salvar Projeto</button>
+                        <button id="save-project-btn" class="btn btn-success text-lg w-full">✔ Salvar Projeto</button>
                     </div>
                 </div>
             </div>
         </section>
 
         <main id="view-reports" class="hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Relatório de Projetos</h2>
-                <div id="reports-filter-container"></div>
+            <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                <h2 class="text-2xl font-black">Relatório de Projetos</h2>
+                <div id="reports-filter-container" class="flex gap-4">
+                </div>
             </div>
-            <div id="reports-container" class="space-y-8"></div>
+            <div id="reports-container" class="space-y-8">
+            </div>
         </main>
     </div>
 
-    <!-- Lightbox/Modal Structures -->
     <div id="lightbox-overlay" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+        <div class="rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col card">
+            <div class="flex justify-between items-center p-4 border-b border-[#F9F8F8]/10">
                 <h2 id="lightbox-title" class="text-xl font-bold"></h2>
-                <button id="lightbox-close" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+                <button id="lightbox-close" class="opacity-70 hover:opacity-100 text-3xl leading-none">&times;</button>
             </div>
             <div id="lightbox-content" class="p-6 overflow-y-auto"></div>
         </div>
     </div>
 
     <div id="confirmation-modal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-sm p-6 text-center">
-             <h2 id="confirmation-title" class="text-xl font-bold mb-4">Confirmar Exclusão</h2>
-             <p id="confirmation-message" class="text-gray-300 mb-6">Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.</p>
+        <div class="rounded-lg shadow-2xl w-full max-w-sm p-6 text-center card">
+             <h2 id="confirmation-title" class="text-xl font-bold mb-4">Confirmar Ação</h2>
+             <p id="confirmation-message" class="opacity-80 mb-6 font-light">Tem certeza que deseja continuar?</p>
              <div class="flex justify-center gap-4">
-                <button id="confirm-cancel-btn" class="btn bg-gray-600 hover:bg-gray-500 text-white">Cancelar</button>
-                <button id="confirm-delete-btn" class="btn btn-danger">Excluir</button>
+                <button id="confirm-cancel-btn" class="btn bg-[#F9F8F8]/10 hover:bg-[#F9F8F8]/20 text-white">Cancelar</button>
+                <button id="confirm-delete-btn" class="btn btn-danger">✖ Confirmar</button>
              </div>
         </div>
     </div>
+
+    <div id="toast-container"></div>
 
     <script>
         window.es_module_shims = true;
@@ -214,8 +360,19 @@
                 remuneracaoPorHora: 0,
                 faturamentoIdeal: 0,
                 editingProjectId: null,
+                editingPackageId: null,
+                currentPricingResult: {},
+                currentSelectedPackage: null,
                 breakdown: {} 
             };
+            
+            // [ALTERAÇÃO]: A lista de itens padrão agora contém apenas 'Landing Page' e 'Institucional'.
+            const defaultItemTypes = [
+                { name: 'Landing Page', isDefault: true }, { name: 'Institucional', isDefault: true }
+            ];
+            let itemTypes = [];
+
+            const chartInstances = {};
             const { jsPDF } = window.jspdf;
             const formatCurrency = value => (parseFloat(value) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             
@@ -240,18 +397,33 @@
                 return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
             };
 
-
             const lightboxOverlay = document.getElementById('lightbox-overlay');
             const lightboxTitle = document.getElementById('lightbox-title');
             const lightboxContent = document.getElementById('lightbox-content');
             const lightboxClose = document.getElementById('lightbox-close');
             const confirmationModal = document.getElementById('confirmation-modal');
             
+            const showToast = (message, type = 'success') => {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                let icon = '';
+                if (type === 'success') icon = '✔️';
+                else if (type === 'error') icon = '✖️';
+                else if (type === 'info') icon = 'ℹ️';
+                
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+                container.appendChild(toast);
+                
+                setTimeout(() => toast.classList.add('show'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.addEventListener('transitionend', () => toast.remove());
+                }, 3000);
+            };
+
             const showLightbox = (data) => {
-                if (typeof data === 'string') {
-                    const cardType = data;
-                    data = state.breakdown[cardType];
-                }
+                if (typeof data === 'string') data = state.breakdown[data];
                 if (!data || !data.title || !data.content) return;
                 lightboxTitle.textContent = data.title;
                 lightboxContent.innerHTML = data.content;
@@ -270,15 +442,8 @@
                 const confirmBtn = confirmationModal.querySelector('#confirm-delete-btn');
                 const cancelBtn = confirmationModal.querySelector('#confirm-cancel-btn');
 
-                const confirmHandler = () => {
-                    onConfirm();
-                    hideConfirmationModal();
-                    cleanup();
-                };
-                const cancelHandler = () => {
-                    hideConfirmationModal();
-                    cleanup();
-                }
+                const confirmHandler = () => { onConfirm(); hideConfirmationModal(); cleanup(); };
+                const cancelHandler = () => { hideConfirmationModal(); cleanup(); }
                 const cleanup = () => {
                     confirmBtn.removeEventListener('click', confirmHandler);
                     cancelBtn.removeEventListener('click', cancelHandler);
@@ -289,18 +454,440 @@
             };
             const hideConfirmationModal = () => confirmationModal.classList.add('hidden');
 
-            const tabs = { pessoal: document.getElementById('tab-pessoal'), profissional: document.getElementById('tab-profissional'), calculator: document.getElementById('tab-calculator'), reports: document.getElementById('tab-reports') };
-            const views = { pessoal: document.getElementById('view-pessoal'), profissional: document.getElementById('view-profissional'), calculator: document.getElementById('view-calculator'), reports: document.getElementById('view-reports') };
+            // --- [CORREÇÃO/MELHORIA] Funções de Gerenciamento de Tipos de Item ---
+
+            /** * Salva a lista atual de tipos de item no localStorage.
+             * A lista contém objetos { name: string, isDefault: boolean }.
+             */
+            const saveItemTypes = () => {
+                localStorage.setItem('freelancerItemTypes', JSON.stringify(itemTypes));
+            };
+
+            /** * Carrega os tipos de item do localStorage. Se não houver, inicializa com os padrões.
+             * Garante que a propriedade `isDefault` esteja presente para compatibilidade.
+             */
+            const loadItemTypes = () => {
+                const stored = localStorage.getItem('freelancerItemTypes');
+                itemTypes = stored ? JSON.parse(stored) : [...defaultItemTypes];
+                itemTypes.forEach(item => {
+                    const isDefault = defaultItemTypes.some(d => d.name === item.name);
+                    item.isDefault = isDefault;
+                });
+                saveItemTypes();
+            };
+
+            /** * Popula um elemento <select> com os tipos de item atuais.
+             * Se um valor previamente selecionado foi removido, ele é exibido como desabilitado.
+             * @param {HTMLSelectElement} selectElement - O elemento select a ser populado.
+             * @param {string|null} selectedValue - O valor que deve ser selecionado.
+             */
+            const populateItemTypeSelect = (selectElement, selectedValue = null) => {
+                if (!selectElement) return;
+                const currentValue = selectedValue || selectElement.value;
+                selectElement.innerHTML = '';
+
+                itemTypes.sort((a,b) => a.name.localeCompare(b.name)).forEach(item => {
+                    selectElement.innerHTML += `<option value="${item.name}">${item.name}</option>`;
+                });
+
+                const allOptions = Array.from(selectElement.options).map(opt => opt.value);
+                if (currentValue && !allOptions.includes(currentValue)) {
+                    const deletedOption = document.createElement('option');
+                    deletedOption.value = currentValue;
+                    deletedOption.textContent = `${currentValue} (removido)`;
+                    deletedOption.disabled = true;
+                    selectElement.prepend(deletedOption);
+                }
+                selectElement.value = currentValue;
+            };
+
+            /** * Renderiza a lista de gerenciamento de itens, com botões de exclusão.
+             * O botão de exclusão é desabilitado para itens padrão (`isDefault: true`).
+             */
+            const renderItemTypesList = () => {
+                const listContainer = document.getElementById('item-types-list');
+                listContainer.innerHTML = '';
+                itemTypes.sort((a,b) => a.name.localeCompare(b.name)).forEach(item => {
+                    const isProtected = item.isDefault;
+                    listContainer.innerHTML += `
+                        <div class="flex justify-between items-center p-2 bg-black/20 rounded-lg text-sm">
+                            <span class="${isProtected ? 'opacity-70' : ''}">${item.name}</span>
+                            <button data-item-name="${item.name}" 
+                                    class="btn btn-danger p-1 rounded delete-item-type-btn ${isProtected ? 'opacity-30 cursor-not-allowed' : 'hover:bg-red-500'}" 
+                                    ${isProtected ? 'disabled' : ''}
+                                    data-tooltip="${isProtected ? 'Itens padrão não podem ser removidos.' : 'Remover item'}"
+                                    aria-label="Remover ${item.name}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                });
+            };
+
+             /** * Adiciona um novo tipo de item customizado.
+              * Valida se o nome está vazio ou se já existe (case-insensitive).
+              * Novos itens são sempre criados com `isDefault: false`.
+              */
+            const addNewItemType = () => {
+                const input = document.getElementById('new-item-type-name');
+                const newItemName = input.value.trim();
+
+                if (!newItemName) return showToast('O nome do item não pode ser vazio.', 'error');
+                if (itemTypes.some(item => item.name.toLowerCase() === newItemName.toLowerCase())) {
+                    return showToast('Este item já existe!', 'error');
+                }
+
+                itemTypes.push({ name: newItemName, isDefault: false }); // Sempre `isDefault: false` para novos itens
+                saveItemTypes();
+                renderItemTypesList();
+                document.querySelectorAll('.pkg-item-type').forEach(select => populateItemTypeSelect(select));
+                showToast(`Item "${newItemName}" adicionado!`, 'success');
+                input.value = '';
+            };
+
+             /** * Exclui um tipo de item customizado.
+              * Valida se o item é padrão para prevenir a exclusão.
+              * Atualiza pacotes existentes que usam o item removido.
+              * @param {string} itemName - O nome do item a ser excluído.
+              */
+            const deleteItemType = (itemName) => {
+                const itemToDelete = itemTypes.find(item => item.name === itemName);
+                if (!itemToDelete || itemToDelete.isDefault) { // [CORREÇÃO] Validação dupla
+                    showToast('Não é possível remover um item padrão.', 'error');
+                    return;
+                }
+
+                showConfirmationModal('Confirmar Exclusão', `Deseja excluir "${itemName}"? Pacotes que usam este item serão atualizados.`, () => {
+                    itemTypes = itemTypes.filter(item => item.name !== itemName);
+                    saveItemTypes();
+                    
+                    // [CORREÇÃO] Atualiza pacotes existentes para manter a integridade
+                    let packages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                    let wasUpdated = false;
+                    packages.forEach(pkg => {
+                        pkg.items.forEach(item => {
+                            if (item.type === itemName) {
+                                item.type = `${itemName} (removido)`;
+                                wasUpdated = true;
+                            }
+                        });
+                    });
+                    if(wasUpdated) localStorage.setItem('pricingPackages', JSON.stringify(packages));
+
+                    renderItemTypesList();
+                    document.querySelectorAll('.pkg-item-type').forEach(select => populateItemTypeSelect(select));
+                    showToast(`Item "${itemName}" removido.`, 'success');
+                });
+            };
+            
+            /** * Restaura os itens padrão que possam ter sido removidos sem afetar os customizados.
+             */
+            const restoreDefaultItems = () => {
+                showConfirmationModal('Restaurar Padrões', 'Isso irá adicionar novamente qualquer item padrão que esteja faltando. Seus itens customizados não serão afetados.', () => {
+                    const currentNames = itemTypes.map(i => i.name);
+                    let addedCount = 0;
+                    defaultItemTypes.forEach(defaultItem => {
+                        if (!currentNames.includes(defaultItem.name)) {
+                            itemTypes.push(defaultItem);
+                            addedCount++;
+                        }
+                    });
+
+                    if (addedCount > 0) {
+                        saveItemTypes(); renderItemTypesList();
+                        document.querySelectorAll('.pkg-item-type').forEach(select => populateItemTypeSelect(select));
+                        showToast(`${addedCount} item(ns) padrão restaurado(s).`, 'success');
+                    } else {
+                        showToast('Nenhum item padrão estava faltando.', 'info');
+                    }
+                });
+            };
+
+            // --- Fim das Funções de Gerenciamento ---
+
+            const tabs = { pessoal: document.getElementById('tab-pessoal'), profissional: document.getElementById('tab-profissional'), calculator: document.getElementById('tab-calculator'), precificacao: document.getElementById('tab-precificacao'), reports: document.getElementById('tab-reports') };
+            const views = { pessoal: document.getElementById('view-pessoal'), profissional: document.getElementById('view-profissional'), calculator: document.getElementById('view-calculator'), precificacao: document.getElementById('view-precificacao'), reports: document.getElementById('view-reports') };
+            
+            const populatePackageDropdown = () => {
+                const select = document.getElementById('project-package-select');
+                if (!select) return;
+                const packages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                const currentVal = select.value;
+                select.innerHTML = '<option value="">Nenhum pacote selecionado</option>';
+                packages.sort((a,b) => a.name.localeCompare(b.name)).forEach(pkg => {
+                    select.innerHTML += `<option value="${pkg.id}">${pkg.name}</option>`;
+                });
+                select.value = currentVal;
+            };
+
             const switchView = viewName => {
                 Object.keys(views).forEach(key => {
                     views[key].classList.add('hidden');
-                    tabs[key].classList.remove('active');
+                    if(tabs[key]) tabs[key].classList.remove('active');
                 });
                 views[viewName].classList.remove('hidden');
-                tabs[viewName].classList.add('active');
+                if(tabs[viewName]) tabs[viewName].classList.add('active');
+                
                 if (viewName === 'reports') renderReports();
+                if (viewName === 'precificacao') {
+                    syncPricingFormParams();
+                    renderPricingPackages();
+                }
+                if (viewName === 'calculator') {
+                    populatePackageDropdown(); 
+                }
             };
-            Object.keys(tabs).forEach(key => tabs[key].addEventListener('click', () => switchView(key)));
+            Object.keys(tabs).forEach(key => tabs[key] && tabs[key].addEventListener('click', () => switchView(key)));
+
+            const pkgForm = {
+                name: document.getElementById('pkg-name'),
+                client: document.getElementById('pkg-client'),
+                desc: document.getElementById('pkg-desc'),
+                itemsContainer: document.getElementById('pkg-items-container'),
+                buffer: document.getElementById('pkg-buffer'),
+                markup: document.getElementById('pkg-markup'),
+                notes: document.getElementById('pkg-notes'),
+                search: document.getElementById('search-packages')
+            };
+            const pricingResult = {
+                cost: document.getElementById('pricing-result-cost'),
+                min: document.getElementById('pricing-result-min'),
+                ideal: document.getElementById('pricing-result-ideal'),
+                alertContainer: document.getElementById('pricing-alert-container')
+            };
+
+            const createPackageItem = (item = {}) => {
+                const div = document.createElement('div');
+                div.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-black/20 rounded-lg relative';
+                div.innerHTML = `
+                    <div class="input-group mb-0">
+                        <label class="input-label text-xs opacity-70">Tipo de Item</label>
+                        <select name="pkg-item-type" class="input-field text-sm p-2 pkg-item-type"></select>
+                    </div>
+                    <div class="input-group mb-0">
+                         <label class="input-label text-xs opacity-70">Unidades</label>
+                        <input type="number" name="pkg-item-units" class="input-field text-sm p-2 pkg-item-units" placeholder="Qtd" value="${item.units || 1}">
+                    </div>
+                    <div class="input-group mb-0">
+                         <label class="input-label text-xs opacity-70">Horas / Unidade</label>
+                        <input type="number" name="pkg-item-hours" class="input-field text-sm p-2 pkg-item-hours" placeholder="Horas" value="${item.hoursPerUnit || ''}">
+                    </div>
+                    <button class="absolute -top-2 -right-2 btn btn-danger rounded-full w-6 h-6 flex items-center justify-center p-0 text-xs remove-pkg-item-btn" aria-label="Remover item do pacote">&times;</button>
+                `;
+                pkgForm.itemsContainer.appendChild(div);
+                const newSelect = div.querySelector('.pkg-item-type');
+                populateItemTypeSelect(newSelect, item.type);
+            };
+            
+            document.getElementById('add-pkg-item-btn').addEventListener('click', () => createPackageItem());
+            pkgForm.itemsContainer.addEventListener('click', e => {
+                if (e.target.classList.contains('remove-pkg-item-btn')) {
+                    e.target.closest('.grid').remove();
+                }
+            });
+
+            const syncPricingFormParams = () => {
+                pkgForm.buffer.value = document.getElementById('project-buffer').value;
+                const profitMargin = parseFloat(document.getElementById('margem-lucro').value) / 100;
+                const markup = (1 - profitMargin) > 0 ? (1 / (1 - profitMargin)).toFixed(2) : 1;
+                pkgForm.markup.value = markup;
+            };
+
+            const generatePricingValues = async () => {
+                const btn = document.getElementById('generate-pricing-btn');
+                btn.disabled = true;
+                btn.textContent = 'Calculando...';
+                
+                await new Promise(resolve => setTimeout(resolve, 200)); 
+
+                pricingResult.alertContainer.innerHTML = '';
+                if(state.valorHoraVenda <= 0) {
+                    pricingResult.alertContainer.innerHTML = `<div class="p-3 rounded-lg bg-[#E52922]/20 text-[#E52922] text-center border border-[#E52922]/50 flex items-center justify-center gap-2"><span>⚠️</span> <span>Atenção: Seu valor/hora é zero. Preencha as abas Pessoal e Profissional para um cálculo preciso.</span></div>`;
+                }
+
+                const items = Array.from(pkgForm.itemsContainer.querySelectorAll('.grid')).map(div => ({
+                    type: div.querySelector('.pkg-item-type').value,
+                    units: parseFloat(div.querySelector('.pkg-item-units').value) || 0,
+                    hoursPerUnit: parseFloat(div.querySelector('.pkg-item-hours').value) || 0
+                }));
+
+                const totalHorasBase = items.reduce((sum, item) => sum + (item.units * item.hoursPerUnit), 0);
+                const buffer = parseFloat(pkgForm.buffer.value) / 100 || 0;
+                const markup = parseFloat(pkgForm.markup.value) || 0;
+                const totalHorasComBuffer = totalHorasBase * (1 + buffer);
+
+                const custoReal = totalHorasComBuffer * (state.custoPorHora + state.remuneracaoPorHora);
+                const precoMinimo = custoReal * markup;
+                const precoIdeal = totalHorasComBuffer * state.valorHoraVenda;
+
+                pricingResult.cost.textContent = formatCurrency(custoReal);
+                pricingResult.min.textContent = formatCurrency(precoMinimo);
+                pricingResult.ideal.textContent = formatCurrency(precoIdeal);
+
+                if (markup < 1 && totalHorasBase > 0) {
+                    pricingResult.alertContainer.innerHTML = `<div class="p-3 rounded-lg bg-[#E52922]/20 text-[#E52922] text-center border border-[#E52922]/50 flex items-center justify-center gap-2"><span>✖️</span> <strong>Alerta de Prejuízo!</strong> Seu markup é menor que 1, resultando em um Preço Mínimo abaixo do seu Custo Real.</div>`;
+                }
+
+                state.currentPricingResult = { totalHorasBase, buffer, markup, custoReal, precoMinimo, precoIdeal, items };
+                btn.disabled = false;
+                btn.textContent = 'Gerar Valores';
+            };
+
+            const renderPricingPackages = (searchTerm = '') => {
+                const packages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                const listContainer = document.getElementById('saved-packages-list');
+                listContainer.innerHTML = '';
+                
+                const filtered = packages.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    (p.client && p.client.toLowerCase().includes(searchTerm.toLowerCase()))
+                ).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                if (filtered.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center opacity-50 font-light">Nenhum pacote encontrado.</p>';
+                    return;
+                }
+
+                filtered.forEach(pkg => {
+                    const item = document.createElement('div');
+                    item.className = 'p-3 bg-black/20 rounded-lg';
+                    item.innerHTML = `
+                        <div class="flex justify-between items-start">
+                           <div>
+                                <span class="font-bold">${pkg.name}</span>
+                                <span class="text-sm opacity-60 block font-light">${pkg.client || 'Sem cliente'} - ${new Date(pkg.date).toLocaleDateString('pt-BR')}</span>
+                           </div>
+                            <span class="font-bold text-lg text-[#E52922]">${formatCurrency(pkg.values.precoIdeal)}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mt-3">
+                            <button data-id="${pkg.id}" class="btn bg-[#F9F8F8]/10 hover:bg-[#F9F8F8]/20 text-xs flex-grow view-package-btn">Ver Detalhes</button>
+                            <button data-id="${pkg.id}" class="btn-primary p-2 rounded edit-package-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
+                            </button>
+                            <button data-id="${pkg.id}" class="btn-danger p-2 rounded delete-package-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            };
+            
+            const resetPackageForm = () => {
+                state.editingPackageId = null;
+                pkgForm.name.value = ''; pkgForm.client.value = ''; pkgForm.desc.value = ''; pkgForm.notes.value = '';
+                pkgForm.itemsContainer.innerHTML = '';
+                createPackageItem();
+                syncPricingFormParams();
+                generatePricingValues();
+                document.getElementById('save-package-btn').innerHTML = '✔ Salvar Pacote';
+            };
+
+            const savePricingPackage = () => {
+                if (!state.currentPricingResult.precoIdeal) return showToast('Gere os valores antes de salvar.', 'error');
+                
+                const packageData = {
+                    name: pkgForm.name.value || 'Pacote sem nome',
+                    client: pkgForm.client.value, desc: pkgForm.desc.value, notes: pkgForm.notes.value,
+                    date: new Date().toISOString(),
+                    items: state.currentPricingResult.items || [], 
+                    params: { buffer: parseFloat(pkgForm.buffer.value), markup: parseFloat(pkgForm.markup.value), },
+                    values: state.currentPricingResult,
+                    history: []
+                };
+
+                if (packageData.items.reduce((sum, i) => sum + i.hoursPerUnit, 0) === 0) {
+                    return showToast('Adicione pelo menos um item com horas estimadas.', 'error');
+                }
+
+                let packages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                if (state.editingPackageId) {
+                    const index = packages.findIndex(p => p.id === state.editingPackageId);
+                    if (index !== -1) {
+                        const oldPackage = packages[index];
+                        packageData.history = oldPackage.history || [];
+                        packageData.history.push({ date: new Date().toISOString(), log: 'Pacote atualizado.', oldData: { values: oldPackage.values, params: oldPackage.params }});
+                        packages[index] = { ...oldPackage, ...packageData, id: state.editingPackageId };
+                        showToast(`Pacote "${packageData.name}" atualizado!`, 'success');
+                    }
+                } else {
+                    packageData.id = Date.now();
+                    packages.push(packageData);
+                    showToast(`Pacote "${packageData.name}" salvo!`, 'success');
+                }
+                
+                localStorage.setItem('pricingPackages', JSON.stringify(packages));
+                renderPricingPackages(pkgForm.search.value);
+                populatePackageDropdown();
+                resetPackageForm();
+            };
+
+            const editPricingPackage = (id) => {
+                const packages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                const pkg = packages.find(p => p.id === id);
+                if (!pkg) return;
+
+                state.editingPackageId = id;
+                pkgForm.name.value = pkg.name; pkgForm.client.value = pkg.client || '';
+                pkgForm.desc.value = pkg.desc || ''; pkgForm.notes.value = pkg.notes || '';
+                pkgForm.buffer.value = pkg.params.buffer; pkgForm.markup.value = pkg.params.markup;
+                
+                pkgForm.itemsContainer.innerHTML = '';
+                pkg.items.forEach(createPackageItem);
+
+                generatePricingValues();
+                document.getElementById('save-package-btn').innerHTML = '✔ Atualizar Pacote';
+                showToast(`Editando: ${pkg.name}`, 'info');
+            };
+
+            const viewPackageDetails = (id) => {
+                 const packages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                 const pkg = packages.find(p => p.id === id);
+                 if (!pkg) return;
+                 const content = `
+                    <div class="space-y-4 opacity-90 font-light">
+                        <p><strong>Cliente:</strong> ${pkg.client || 'N/A'}</p>
+                        <p><strong>Descrição:</strong> ${pkg.desc || 'N/A'}</p>
+                        <hr class="border-[#F9F8F8]/10">
+                        <h4 class="font-bold text-lg text-[#E52922]">Itens do Pacote</h4>
+                        <ul class="list-disc list-inside">${pkg.items.map(i => `<li><strong>${i.units}x</strong> ${i.type} @ ${i.hoursPerUnit}h/unidade</li>`).join('')}</ul>
+                        <hr class="border-[#F9F8F8]/10">
+                        <h4 class="font-bold text-lg text-[#E52922]">Notas de Negociação</h4>
+                        <p class="whitespace-pre-wrap bg-black/30 p-2 rounded">${pkg.notes || 'Nenhuma nota registrada.'}</p>
+                    </div>
+                 `;
+                 showLightbox({ title: `Detalhes: ${pkg.name}`, content });
+            };
+
+            const deletePricingPackage = (id) => {
+                showConfirmationModal('Confirmar Exclusão', 'Tem certeza que deseja excluir este pacote?', () => {
+                    let packages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                    packages = packages.filter(p => p.id !== id);
+                    localStorage.setItem('pricingPackages', JSON.stringify(packages));
+                    
+                    let projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
+                    projects.forEach(p => { if (p.packageId === id) p.packageId = null; });
+                    localStorage.setItem('freelancerProjects', JSON.stringify(projects));
+                    
+                    renderPricingPackages(pkgForm.search.value);
+                    populatePackageDropdown();
+                    showToast('Pacote excluído.', 'error');
+                });
+            };
+            
+            document.getElementById('generate-pricing-btn').addEventListener('click', generatePricingValues);
+            document.getElementById('save-package-btn').addEventListener('click', savePricingPackage);
+            document.getElementById('saved-packages-list').addEventListener('click', e => {
+                const editBtn = e.target.closest('.edit-package-btn');
+                const deleteBtn = e.target.closest('.delete-package-btn');
+                const viewBtn = e.target.closest('.view-package-btn');
+                if (editBtn) editPricingPackage(parseInt(editBtn.dataset.id));
+                if (deleteBtn) deletePricingPackage(parseInt(deleteBtn.dataset.id));
+                if (viewBtn) viewPackageDetails(parseInt(viewBtn.dataset.id));
+            });
+            pkgForm.search.addEventListener('input', e => renderPricingPackages(e.target.value));
 
             const createDespesaPessoalItem = (nome = '', valor = '', isCompartilhado = false) => {
                 const list = document.getElementById('despesas-pessoais-list');
@@ -322,7 +909,7 @@
                  const item = document.createElement('div');
                  item.className = 'dynamic-list-item';
                  item.innerHTML = `
-                    <input type="text" class="input-field flex-grow" placeholder="Nome do Custo" value="${nome}">
+                    <input type="text" class="input-field flex-grow" placeholder="Nome do Custo" value="${valor}">
                     <input type="number" class="input-field w-32" placeholder="Valor" value="${valor}">
                     <button class="btn btn-danger text-xs px-2 py-1">&times;</button>
                  `;
@@ -370,86 +957,83 @@
 
             const calculateProject = () => {
                 const totalHorasBase = Array.from(document.querySelectorAll('#project-tasks-list .dynamic-list-item')).reduce((acc, item) => {
-                    const timeStr = item.querySelectorAll('input')[1].value;
-                    return acc + parseTimeToDecimal(timeStr);
+                    return acc + parseTimeToDecimal(item.querySelectorAll('input')[1].value);
                 }, 0);
                 
                 const percBuffer = parseFloat(projectBufferInput.value) / 100;
                 const totalHorasComBuffer = totalHorasBase * (1 + percBuffer);
                 const precoProjeto = totalHorasComBuffer * state.valorHoraVenda;
-
                 const custoProjeto = totalHorasComBuffer * state.custoPorHora;
                 const remuneracaoProjeto = totalHorasComBuffer * state.remuneracaoPorHora;
                 const lucroProjeto = precoProjeto - custoProjeto - remuneracaoProjeto;
 
                 document.getElementById('project-price').textContent = formatCurrency(precoProjeto);
-                document.getElementById('project-total-hours').textContent = `Total de ${totalHorasComBuffer.toFixed(2)} horas (${formatDecimalToTime(totalHorasComBuffer)}) com buffer`;
+                document.getElementById('project-total-hours').textContent = `Total de ${totalHorasComBuffer.toFixed(2)}h (${formatDecimalToTime(totalHorasComBuffer)}) com buffer`;
                 document.getElementById('project-breakdown-cost').textContent = formatCurrency(custoProjeto);
                 document.getElementById('project-breakdown-remuneration').textContent = formatCurrency(remuneracaoProjeto);
                 document.getElementById('project-breakdown-profit').textContent = formatCurrency(lucroProjeto);
                 document.getElementById('project-buffer-label').textContent = `${projectBufferInput.value}%`;
+
+                const alertContainer = document.getElementById('project-price-alert-container');
+                alertContainer.innerHTML = '';
+                if (state.currentSelectedPackage) {
+                    const packageHorasBase = state.currentSelectedPackage.items.reduce((sum, item) => sum + ((item.units || 1) * (item.hoursPerUnit || 0)), 0);
+                    if (totalHorasBase > packageHorasBase && packageHorasBase > 0) {
+                        alertContainer.innerHTML = `<div class="p-3 rounded-lg bg-[#E52922]/20 text-[#E52922] border border-[#E52922]/50 flex items-center gap-2"><span>⚠️</span> <span><b>Atenção:</b> As horas estimadas (${totalHorasBase.toFixed(1)}h) ultrapassam as ${packageHorasBase.toFixed(1)}h previstas no pacote.</span></div>`;
+                    }
+                }
             };
             
             projectBufferInput.addEventListener('input', calculateProject);
 
-            const saveProjectBtn = document.getElementById('save-project-btn');
-            
             const saveProject = () => {
                 const projectName = document.getElementById('project-name').value || 'Projeto sem nome';
-                const tasks = Array.from(document.querySelectorAll('#project-tasks-list .dynamic-list-item')).map(item => {
-                    return {
-                        name: item.querySelectorAll('input')[0].value,
-                        hours: parseTimeToDecimal(item.querySelectorAll('input')[1].value)
-                    };
-                }).filter(task => task.hours > 0);
+                const tasks = Array.from(document.querySelectorAll('#project-tasks-list .dynamic-list-item')).map(item => ({
+                    name: item.querySelectorAll('input')[0].value,
+                    hours: parseTimeToDecimal(item.querySelectorAll('input')[1].value)
+                })).filter(task => task.name && task.hours > 0);
 
-                if (tasks.length === 0) {
-                    alert('Adicione pelo menos uma tarefa com horas para salvar o projeto.');
-                    return;
-                }
+                if (tasks.length === 0) return showToast('Adicione pelo menos uma tarefa com nome e horas.', 'error');
                 
                 const bufferPercent = parseFloat(document.getElementById('project-buffer').value);
                 const totalHorasBase = tasks.reduce((acc, task) => acc + task.hours, 0);
                 const totalHorasComBuffer = totalHorasBase * (1 + bufferPercent / 100);
-                
                 const price = totalHorasComBuffer * state.valorHoraVenda;
                 const cost = totalHorasComBuffer * state.custoPorHora;
                 const remuneration = totalHorasComBuffer * state.remuneracaoPorHora;
                 const profit = price - cost - remuneration;
 
                 const projectData = {
-                    name: projectName,
-                    date: new Date().toISOString(),
-                    tasks,
-                    bufferPercent,
-                    totalHours: totalHorasComBuffer,
-                    price,
-                    breakdown: { cost, remuneration, profit },
-                    metricsSnapshot: {
-                        valorHoraVenda: state.valorHoraVenda,
-                        metaFaturamentoIdeal: state.faturamentoIdeal
-                    }
+                    packageId: document.getElementById('project-package-select').value ? parseInt(document.getElementById('project-package-select').value) : null,
+                    name: projectName, date: new Date().toISOString(), tasks, bufferPercent,
+                    totalHours: totalHorasComBuffer, price, breakdown: { cost, remuneration, profit },
+                    metricsSnapshot: { valorHoraVenda: state.valorHoraVenda, metaFaturamentoIdeal: state.faturamentoIdeal }
                 };
 
                 let projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
                 if (state.editingProjectId) {
                     const index = projects.findIndex(p => p.id === state.editingProjectId);
                     if (index !== -1) {
-                        projects[index] = { ...projects[index], ...projectData };
+                        projects[index] = { ...projects[index], ...projectData, lastUpdated: new Date().toISOString() };
                     }
-                    alert(`Projeto "${projectName}" atualizado com sucesso!`);
+                    showToast(`Projeto "${projectName}" atualizado!`, 'success');
                     state.editingProjectId = null;
                 } else {
                     projectData.id = Date.now();
                     projects.push(projectData);
-                    alert(`Projeto "${projectName}" salvo com sucesso!`);
+                    showToast(`Projeto "${projectName}" salvo!`, 'success');
                 }
                 
                 localStorage.setItem('freelancerProjects', JSON.stringify(projects));
-                document.getElementById('save-project-btn').textContent = 'Salvar Projeto';
+                document.getElementById('save-project-btn').innerHTML = '✔ Salvar Projeto';
+                document.getElementById('project-name').value = '';
+                document.getElementById('project-package-select').value = '';
+                document.getElementById('project-tasks-list').innerHTML = '';
+                createProjectTaskItem();
+                state.currentSelectedPackage = null;
+                calculateProject();
             };
-
-            saveProjectBtn.addEventListener('click', saveProject);
+            document.getElementById('save-project-btn').addEventListener('click', saveProject);
 
             const editProject = (projectId) => {
                 const projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
@@ -460,61 +1044,129 @@
                 document.getElementById('project-name').value = project.name;
                 document.getElementById('project-buffer').value = project.bufferPercent;
                 
+                populatePackageDropdown();
+                document.getElementById('project-package-select').value = project.packageId || '';
+                document.getElementById('project-package-select').dispatchEvent(new Event('change'));
+
                 const taskList = document.getElementById('project-tasks-list');
                 taskList.innerHTML = '';
                 project.tasks.forEach(task => createProjectTaskItem(task.name, formatDecimalToTime(task.hours)));
                 
-                document.getElementById('save-project-btn').textContent = 'Salvar Alterações';
+                document.getElementById('save-project-btn').innerHTML = '✔ Salvar Alterações';
                 switchView('calculator');
                 calculateProject();
             };
 
             const deleteProject = (projectId) => {
-                showConfirmationModal('Confirmar Exclusão', 'Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.', () => {
+                showConfirmationModal('Confirmar Exclusão', 'Tem certeza que deseja excluir este projeto?', () => {
                     let projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
                     projects = projects.filter(p => p.id !== projectId);
                     localStorage.setItem('freelancerProjects', JSON.stringify(projects));
                     renderReports();
+                    showToast('Projeto excluído.', 'error');
                 });
             };
 
             const downloadReportAsPDF = (month) => {
                 const reportElement = document.querySelector(`.report-month[data-month-id="${month}"]`);
                 if (!reportElement) return;
-
-                html2canvas(reportElement, { backgroundColor: '#111827' }).then(canvas => {
+                html2canvas(reportElement, { backgroundColor: '#242424' }).then(canvas => {
                     const imgData = canvas.toDataURL('image/png');
                     const pdf = new jsPDF('p', 'mm', 'a4');
-                    const imgProps = pdf.getImageProperties(imgData);
                     const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                     pdf.save(`relatorio_${month.replace(/ /g, '_').toLowerCase()}.pdf`);
                 });
             };
 
-            const renderReports = (filterMonth = 'all') => {
+            const renderMonthlyReportChart = (canvasId, data) => {
+                const ctx = document.getElementById(canvasId)?.getContext('2d');
+                if (!ctx) return;
+                if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+                chartInstances[canvasId] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Performance do Mês'],
+                        datasets: [
+                            { label: 'Faturado', data: [data.totalFaturado], backgroundColor: 'rgba(229, 41, 34, 0.8)', },
+                            { label: 'Lucro', data: [data.totalLucro], backgroundColor: 'rgba(249, 248, 248, 0.8)', },
+                            { label: 'Meta', data: [data.metaDoMes], backgroundColor: 'rgba(229, 41, 34, 0.4)', }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#F9F8F8', font: { family: "'Mulish', sans-serif" } } } },
+                        scales: { 
+                            y: { ticks: { color: '#F9F8F8' }, grid: { color: 'rgba(249, 248, 248, 0.1)'} },
+                            x: { ticks: { color: '#F9F8F8' }, grid: { color: 'rgba(249, 248, 248, 0.1)'} }
+                        }
+                    }
+                });
+            };
+
+            const renderReports = (filterMonth = 'all', filterPackage = 'all') => {
                 const reportsContainer = document.getElementById('reports-container');
                 const filterContainer = document.getElementById('reports-filter-container');
                 const projects = JSON.parse(localStorage.getItem('freelancerProjects')) || [];
-                
-                reportsContainer.innerHTML = '';
-                filterContainer.innerHTML = '';
+                const allPackages = JSON.parse(localStorage.getItem('pricingPackages')) || [];
+                reportsContainer.innerHTML = ''; filterContainer.innerHTML = '';
 
                 if (projects.length === 0) {
-                    reportsContainer.innerHTML = '<p class="text-center text-gray-400">Ainda não há projetos salvos.</p>';
+                    reportsContainer.innerHTML = '<p class="text-center opacity-50 font-light">Ainda não há projetos salvos.</p>';
                     return;
                 }
                 
                 const uniqueMonths = [...new Set(projects.map(p => new Date(p.date).toLocaleString('pt-BR', { year: 'numeric', month: 'long' })))].sort((a,b) => new Date(b.split(' de ').reverse().join('-')) - new Date(a.split(' de ').reverse().join('-')));
-                
                 const filterSelect = document.createElement('select');
-                filterSelect.className = 'input-field';
+                filterSelect.className = 'input-field w-auto';
                 filterSelect.innerHTML = `<option value="all">Todos os Meses</option>${uniqueMonths.map(m => `<option value="${m}" ${filterMonth === m ? 'selected' : ''}>${m}</option>`).join('')}`;
                 filterContainer.appendChild(filterSelect);
-                filterSelect.addEventListener('change', (e) => renderReports(e.target.value));
+                const packageFilterSelect = document.createElement('select');
+                packageFilterSelect.className = 'input-field w-auto';
+                packageFilterSelect.innerHTML = `<option value="all">Todos os Pacotes</option><option value="none">Projetos Avulsos</option>${allPackages.map(p => `<option value="${p.id}" ${filterPackage === String(p.id) ? 'selected' : ''}>${p.name}</option>`).join('')}`;
+                filterContainer.appendChild(packageFilterSelect);
 
-                const filteredProjects = projects.filter(p => filterMonth === 'all' || new Date(p.date).toLocaleString('pt-BR', { year: 'numeric', month: 'long' }) === filterMonth);
+                filterSelect.addEventListener('change', (e) => renderReports(e.target.value, packageFilterSelect.value));
+                packageFilterSelect.addEventListener('change', (e) => renderReports(filterSelect.value, e.target.value));
+
+                const filteredProjects = projects
+                    .filter(p => filterMonth === 'all' || new Date(p.date).toLocaleString('pt-BR', { year: 'numeric', month: 'long' }) === filterMonth)
+                    .filter(p => filterPackage === 'all' || (filterPackage === 'none' ? !p.packageId : p.packageId === parseInt(filterPackage)));
+
+                if (filteredProjects.length === 0) {
+                    reportsContainer.innerHTML = '<p class="text-center opacity-50 font-light">Nenhum projeto encontrado para os filtros selecionados.</p>';
+                    return;
+                }
+                
+                const projectsByPackage = filteredProjects.reduce((acc, p) => {
+                    const key = p.packageId || 'none';
+                    if (!acc[key]) acc[key] = [];
+                    acc[key].push(p);
+                    return acc;
+                }, {});
+
+                let summaryHTML = '';
+                allPackages.forEach(pkg => {
+                    const packageProjects = projectsByPackage[pkg.id];
+                    if (packageProjects) {
+                        const totalFaturado = packageProjects.reduce((s, p) => s + p.price, 0);
+                        const totalLucro = packageProjects.reduce((s, p) => s + p.breakdown.profit, 0);
+                        const totalHoras = packageProjects.reduce((s, p) => s + p.totalHours, 0);
+                        const margem = totalFaturado > 0 ? (totalLucro / totalFaturado * 100) : 0;
+                        summaryHTML += `<li class="p-3 bg-black/20 rounded-lg"><div class="flex justify-between items-center font-bold"><span>${pkg.name}</span><span class="text-[#E52922]">${formatCurrency(totalFaturado)}</span></div><div class="flex justify-between items-center text-sm opacity-70 mt-1"><span>${packageProjects.length} projeto(s) / ${totalHoras.toFixed(1)}h</span><span>Lucro: ${formatCurrency(totalLucro)} (${margem.toFixed(1)}%)</span></div></li>`;
+                    }
+                });
+                if (projectsByPackage['none']) {
+                     const totalFaturado = projectsByPackage['none'].reduce((s, p) => s + p.price, 0);
+                     const totalLucro = projectsByPackage['none'].reduce((s, p) => s + p.breakdown.profit, 0);
+                     const totalHoras = projectsByPackage['none'].reduce((s, p) => s + p.totalHours, 0);
+                     const margem = totalFaturado > 0 ? (totalLucro / totalFaturado * 100) : 0;
+                     summaryHTML += `<li class="p-3 bg-black/20 rounded-lg"><div class="flex justify-between items-center font-bold"><span>Projetos Avulsos</span><span class="text-[#E52922]">${formatCurrency(totalFaturado)}</span></div><div class="flex justify-between items-center text-sm opacity-70 mt-1"><span>${projectsByPackage['none'].length} projeto(s) / ${totalHoras.toFixed(1)}h</span><span>Lucro: ${formatCurrency(totalLucro)} (${margem.toFixed(1)}%)</span></div></li>`;
+                }
+                if (summaryHTML && filterPackage === 'all') {
+                    reportsContainer.innerHTML += `<div class="p-6 rounded-lg card mb-8"><h2 class="text-2xl font-black mb-4">Resumo por Pacote</h2><ul class="space-y-3">${summaryHTML}</ul></div>`;
+                }
 
                 const groupedByMonth = filteredProjects.reduce((acc, project) => {
                     const month = new Date(project.date).toLocaleString('pt-BR', { year: 'numeric', month: 'long' });
@@ -523,350 +1175,144 @@
                     return acc;
                 }, {});
 
-                for (const month of uniqueMonths) {
-                    if (groupedByMonth[month]) {
-                        const monthProjects = groupedByMonth[month];
-                        const totalFaturado = monthProjects.reduce((sum, p) => sum + p.price, 0);
-                        const totalLucro = monthProjects.reduce((sum, p) => sum + p.breakdown.profit, 0);
-                        const metaDoMes = monthProjects[0].metricsSnapshot.metaFaturamentoIdeal || state.faturamentoIdeal;
-                        const progressoMeta = metaDoMes > 0 ? (totalFaturado / metaDoMes) * 100 : 0;
-
-                        const monthElement = document.createElement('div');
-                        monthElement.className = 'bg-gray-800 p-6 rounded-lg report-month';
-                        monthElement.setAttribute('data-month-id', month);
-                        monthElement.innerHTML = `
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-2xl font-bold capitalize">${month}</h2>
-                                <button data-month-id="${month}" class="btn btn-primary text-sm download-pdf-btn">Baixar PDF</button>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <div class="bg-gray-700/50 p-4 rounded-lg text-center">
-                                    <div class="text-3xl font-bold text-green-400">${formatCurrency(totalFaturado)}</div>
-                                    <div class="text-gray-400">Faturado</div>
-                                </div>
-                                <div class="bg-gray-700/50 p-4 rounded-lg text-center">
-                                    <div class="text-3xl font-bold text-yellow-400">${formatCurrency(totalLucro)}</div>
-                                    <div class="text-gray-400">Lucro</div>
-                                </div>
-                                <div class="bg-gray-700/50 p-4 rounded-lg text-center">
-                                    <div class="text-3xl font-bold text-blue-400">${progressoMeta.toFixed(0)}%</div>
-                                    <div class="text-gray-400">da Meta (${formatCurrency(metaDoMes)})</div>
-                                </div>
-                            </div>
-                            <h3 class="font-semibold text-lg mb-3 text-gray-300">Projetos Salvos</h3>
-                            <ul class="space-y-2">
-                                ${monthProjects.map(p => `
-                                    <li class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
-                                        <span class="cursor-pointer hover:text-blue-400 project-details-btn" data-project-id="${p.id}">${p.name}</span>
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-semibold">${formatCurrency(p.price)}</span>
-                                            <button data-project-id="${p.id}" class="btn-primary p-2 rounded edit-btn">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
-                                            </button>
-                                            <button data-project-id="${p.id}" class="btn-danger p-2 rounded delete-btn">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                            </button>
-                                        </div>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        `;
-                        reportsContainer.appendChild(monthElement);
-                    }
+                for (const month of uniqueMonths.filter(m => groupedByMonth[m])) {
+                    const monthProjects = groupedByMonth[month];
+                    const totalFaturado = monthProjects.reduce((s, p) => s + p.price, 0);
+                    const totalLucro = monthProjects.reduce((s, p) => s + p.breakdown.profit, 0);
+                    const metaDoMes = monthProjects[0]?.metricsSnapshot?.metaFaturamentoIdeal || state.faturamentoIdeal;
+                    const canvasId = `chart-${month.replace(/\s/g, '-')}`;
+                    const monthElement = document.createElement('div');
+                    monthElement.className = 'p-6 rounded-lg report-month card';
+                    monthElement.dataset.monthId = month;
+                    monthElement.innerHTML = `
+                        <div class="flex justify-between items-center mb-4 flex-wrap gap-2"><h2 class="text-2xl font-black capitalize">${month}</h2><button data-month-id="${month}" class="btn btn-primary text-sm download-pdf-btn">Baixar PDF</button></div>
+                        <div class="mb-6 bg-black/20 p-2 sm:p-4 rounded-lg"><canvas id="${canvasId}"></canvas></div>
+                        <h3 class="font-bold text-lg mb-3">Projetos Salvos</h3>
+                        <ul class="space-y-2">${monthProjects.map(p => {
+                            const pkg = allPackages.find(pkg => pkg.id === p.packageId);
+                            return `<li class="flex justify-between items-start p-3 bg-black/20 rounded-lg flex-wrap gap-2"><div><span class="cursor-pointer hover:text-[#E52922] project-details-btn font-regular block" data-project-id="${p.id}">${p.name}</span><span class="text-xs ${pkg ? 'text-[#E52922]/80' : 'opacity-60'} font-light">${pkg ? pkg.name : 'Avulso'}</span></div><div class="flex items-center gap-2 ml-auto"><span class="font-bold text-right">${formatCurrency(p.price)}</span><button data-project-id="${p.id}" class="btn-primary p-2 rounded edit-btn"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg></button><button data-project-id="${p.id}" class="btn-danger p-2 rounded delete-btn"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div></li>`
+                        }).join('')}</ul>`;
+                    reportsContainer.appendChild(monthElement);
+                    renderMonthlyReportChart(canvasId, { totalFaturado, totalLucro, metaDoMes });
                 }
 
-                document.querySelectorAll('.project-details-btn').forEach(el => el.addEventListener('click', (e) => {
-                    const projectId = parseInt(e.currentTarget.getAttribute('data-project-id'));
-                    const project = projects.find(p => p.id === projectId);
-                    if(project) showLightbox({ 
-                        title: `Detalhes: ${project.name}`, 
-                        content: `
-                            <div class="space-y-4">
-                                <h3 class="font-semibold text-lg text-blue-400">Tarefas</h3>
-                                <ul class="list-disc list-inside text-gray-300">
-                                    ${project.tasks.map(t => `<li>${t.name || 'Tarefa sem nome'}: ${formatDecimalToTime(t.hours)}</li>`).join('')}
-                                </ul>
-                                <p><strong>Total de Horas (com ${project.bufferPercent}% de buffer):</strong> ${project.totalHours.toFixed(2)}h (${formatDecimalToTime(project.totalHours)})</p>
-                                <hr class="border-gray-700">
-                                <h3 class="font-semibold text-lg text-blue-400">Detalhamento do Preço</h3>
-                                <ul class="list-disc list-inside text-gray-300">
-                                    <li>Custos da Empresa: ${formatCurrency(project.breakdown.cost)}</li>
-                                    <li>Sua Remuneração: ${formatCurrency(project.breakdown.remuneration)}</li>
-                                    <li>Lucro: ${formatCurrency(project.breakdown.profit)}</li>
-                                </ul>
-                                <p class="text-right font-bold mt-2 text-2xl">${formatCurrency(project.price)}</p>
-                            </div>
-                        ` 
+                document.querySelectorAll('.project-details-btn, .edit-btn, .delete-btn, .download-pdf-btn').forEach(el => {
+                    el.addEventListener('click', e => {
+                        const target = e.currentTarget;
+                        const projectId = parseInt(target.dataset.projectId);
+                        if (target.classList.contains('edit-btn')) editProject(projectId);
+                        else if (target.classList.contains('delete-btn')) deleteProject(projectId);
+                        else if (target.classList.contains('download-pdf-btn')) downloadReportAsPDF(target.dataset.monthId);
+                        else if (target.classList.contains('project-details-btn')) {
+                            const project = projects.find(p => p.id === projectId);
+                            if (project) {
+                                const pkg = allPackages.find(pkg => pkg.id === project.packageId);
+                                showLightbox({
+                                    title: `Detalhes: ${project.name}`,
+                                    content: `<div class="space-y-4 opacity-90 font-light"><p><strong>Pacote:</strong> ${pkg ? pkg.name : 'N/A (Avulso)'}</p><p><strong>Valor:</strong> ${formatCurrency(project.price)} por ${project.totalHours.toFixed(2)}h</p><hr class="border-[#F9F8F8]/10"><h4 class="font-bold text-lg text-[#E52922]">Detalhamento</h4><ul class="list-disc list-inside"><li><strong>Custo:</strong> ${formatCurrency(project.breakdown.cost)}</li><li><strong>Remuneração:</strong> ${formatCurrency(project.breakdown.remuneration)}</li><li><strong>Lucro:</strong> ${formatCurrency(project.breakdown.profit)}</li></ul><hr class="border-[#F9F8F8]/10"><h4 class="font-bold text-lg text-[#E52922]">Tarefas</h4><ul class="list-disc list-inside">${project.tasks.map(t => `<li><strong>${t.name}:</strong> ${t.hours.toFixed(2)}h</li>`).join('')}</ul></div>`
+                                });
+                            }
+                        }
                     });
-                }));
-                 document.querySelectorAll('.edit-btn').forEach(el => el.addEventListener('click', (e) => editProject(parseInt(e.currentTarget.getAttribute('data-project-id')))));
-                 document.querySelectorAll('.delete-btn').forEach(el => el.addEventListener('click', (e) => deleteProject(parseInt(e.currentTarget.getAttribute('data-project-id')))));
-                 document.querySelectorAll('.download-pdf-btn').forEach(el => el.addEventListener('click', (e) => downloadReportAsPDF(e.currentTarget.getAttribute('data-month-id'))));
+                });
             };
 
             const saveData = () => {
-                const dataToSave = {
-                    despesasPessoais: [], custosProfissionais: [], depreciacao: [], metas: {}, parametros: {}
-                };
-
-                document.querySelectorAll('#despesas-pessoais-list .dynamic-list-item').forEach(item => {
-                    dataToSave.despesasPessoais.push({
-                        nome: item.querySelectorAll('input')[0].value,
-                        valor: item.querySelectorAll('input')[1].value,
-                        isCompartilhado: item.querySelectorAll('input')[2].checked
-                    });
-                });
-                document.querySelectorAll('#custos-profissionais-list .dynamic-list-item').forEach(item => {
-                    dataToSave.custosProfissionais.push({ nome: item.querySelectorAll('input')[0].value, valor: item.querySelectorAll('input')[1].value });
-                });
-                document.querySelectorAll('#depreciacao-list .dynamic-list-item').forEach(item => {
-                    dataToSave.depreciacao.push({ nome: item.querySelectorAll('input')[0].value, valor: item.querySelectorAll('input')[1].value, vidaUtil: item.querySelectorAll('input')[2].value });
-                });
-
-                dataToSave.metas = {
-                    ajudaCusto: document.getElementById('ajuda-custo').value,
-                    lazer: document.getElementById('lazer').value,
-                    investimento: document.getElementById('investimento').value
-                };
-                dataToSave.parametros = {
-                    areaEscritorio: document.getElementById('area-escritorio').value,
-                    areaTotal: document.getElementById('area-total').value,
-                    horasSemana: document.getElementById('horas-semana').value,
-                    tempoNaoFaturavel: document.getElementById('tempo-nao-faturavel').value,
-                    margemLucro: document.getElementById('margem-lucro').value
-                };
-                
+                const dataToSave = { despesasPessoais: [], custosProfissionais: [], depreciacao: [], metas: {}, parametros: {} };
+                document.querySelectorAll('#despesas-pessoais-list .dynamic-list-item').forEach(item => dataToSave.despesasPessoais.push({ nome: item.querySelectorAll('input')[0].value, valor: item.querySelectorAll('input')[1].value, isCompartilhado: item.querySelectorAll('input')[2].checked }));
+                document.querySelectorAll('#custos-profissionais-list .dynamic-list-item').forEach(item => dataToSave.custosProfissionais.push({ nome: item.querySelectorAll('input')[0].value, valor: item.querySelectorAll('input')[1].value }));
+                document.querySelectorAll('#depreciacao-list .dynamic-list-item').forEach(item => dataToSave.depreciacao.push({ nome: item.querySelectorAll('input')[0].value, valor: item.querySelectorAll('input')[1].value, vidaUtil: item.querySelectorAll('input')[2].value }));
+                dataToSave.metas = { ajudaCusto: document.getElementById('ajuda-custo').value, lazer: document.getElementById('lazer').value, investimento: document.getElementById('investimento').value };
+                dataToSave.parametros = { areaEscritorio: document.getElementById('area-escritorio').value, areaTotal: document.getElementById('area-total').value, horasSemana: document.getElementById('horas-semana').value, tempoNaoFaturavel: document.getElementById('tempo-nao-faturavel').value, margemLucro: document.getElementById('margem-lucro').value };
                 localStorage.setItem('freelancerAppData', JSON.stringify(dataToSave));
             };
 
             const calculateAll = () => {
                 let totalDespesasGeral = 0, totalCustosCompartilhados = 0;
-                document.querySelectorAll('#despesas-pessoais-list .dynamic-list-item').forEach(item => {
-                    const valor = parseFloat(item.querySelectorAll('input')[1].value) || 0;
-                    totalDespesasGeral += valor;
-                    if (item.querySelector('input[type="checkbox"]').checked) totalCustosCompartilhados += valor;
-                });
-
+                document.querySelectorAll('#despesas-pessoais-list .dynamic-list-item').forEach(item => { const v = parseFloat(item.querySelectorAll('input')[1].value) || 0; totalDespesasGeral += v; if (item.querySelector('input[type="checkbox"]').checked) totalCustosCompartilhados += v; });
                 const areaEscritorio = parseFloat(document.getElementById('area-escritorio').value) || 0;
                 const areaTotal = parseFloat(document.getElementById('area-total').value) || 1;
-                const fatorRateio = areaTotal > 0 ? areaEscritorio / areaTotal : 0;
-                const custoHomeOffice = totalCustosCompartilhados * fatorRateio;
-
-                const custos100ProfissionaisList = [];
+                const custoHomeOffice = totalCustosCompartilhados * (areaTotal > 0 ? areaEscritorio / areaTotal : 0);
                 let custos100Profissionais = 0;
-                document.querySelectorAll('#custos-profissionais-list .dynamic-list-item').forEach(item => {
-                    const nome = item.querySelectorAll('input')[0].value || 'Custo sem nome';
-                    const valor = parseFloat(item.querySelectorAll('input')[1].value) || 0;
-                    if (valor > 0) {
-                        custos100Profissionais += valor;
-                        custos100ProfissionaisList.push({ nome, valor });
-                    }
-                });
-                
-                const depreciacaoList = [];
-                const totalDepreciacao = Array.from(document.querySelectorAll('#depreciacao-list .dynamic-list-item')).reduce((acc, item) => {
-                    const nome = item.querySelectorAll('input')[0].value || 'Equipamento sem nome';
-                    const custo = parseFloat(item.querySelectorAll('input')[1].value) || 0;
-                    const vidaUtilAnos = parseFloat(item.querySelectorAll('input')[2].value) || 1;
-                    const valorMensal = vidaUtilAnos > 0 ? custo / (vidaUtilAnos * 12) : 0;
-                    if (valorMensal > 0) depreciacaoList.push({ nome, valorMensal });
-                    return acc + valorMensal;
-                }, 0);
-
+                document.querySelectorAll('#custos-profissionais-list .dynamic-list-item').forEach(item => { custos100Profissionais += parseFloat(item.querySelectorAll('input')[1].value) || 0; });
+                const totalDepreciacao = Array.from(document.querySelectorAll('#depreciacao-list .dynamic-list-item')).reduce((acc, item) => { const c = parseFloat(item.querySelectorAll('input')[1].value) || 0; const v = parseFloat(item.querySelectorAll('input')[2].value) || 1; return acc + (v > 0 ? c / (v * 12) : 0); }, 0);
                 const custoFixoEmpresarial = custos100Profissionais + custoHomeOffice + totalDepreciacao;
                 const custoFixoPessoal = totalDespesasGeral - custoHomeOffice;
-                const ajudaCusto = parseFloat(document.getElementById('ajuda-custo').value) || 0;
-                const lazer = parseFloat(document.getElementById('lazer').value) || 0;
-                const investimento = parseFloat(document.getElementById('investimento').value) || 0;
-                const remuneracaoIdeal = custoFixoPessoal + ajudaCusto + lazer + investimento;
-
+                const remuneracaoIdeal = custoFixoPessoal + (parseFloat(document.getElementById('ajuda-custo').value) || 0) + (parseFloat(document.getElementById('lazer').value) || 0) + (parseFloat(document.getElementById('investimento').value) || 0);
                 const horasSemana = parseFloat(document.getElementById('horas-semana').value) || 40;
                 const percNaoFaturavel = parseFloat(document.getElementById('tempo-nao-faturavel').value) / 100;
                 const percMargemLucro = parseFloat(document.getElementById('margem-lucro').value) / 100;
                 const horasFaturaveisMes = (horasSemana * (1 - percNaoFaturavel)) * 4.33;
-                const custoTotalMensal = custoFixoEmpresarial + remuneracaoIdeal;
-                const custoTotalPorHora = horasFaturaveisMes > 0 ? custoTotalMensal / horasFaturaveisMes : 0;
-                
-                state.valorHoraVenda = (1 - percMargemLucro) > 0 ? custoTotalPorHora / (1 - percMargemLucro) : custoTotalPorHora;
+                const custoTotalPorHora = horasFaturaveisMes > 0 ? (custoFixoEmpresarial + remuneracaoIdeal) / horasFaturaveisMes : 0;
+                state.valorHoraVenda = (1 - percMargemLucro) > 0 ? custoTotalPorHora / (1 - percMargemLucro) : 0;
                 state.custoPorHora = horasFaturaveisMes > 0 ? custoFixoEmpresarial / horasFaturaveisMes : 0;
                 state.remuneracaoPorHora = horasFaturaveisMes > 0 ? remuneracaoIdeal / horasFaturaveisMes : 0;
                 state.faturamentoIdeal = state.valorHoraVenda * horasFaturaveisMes;
-
                 document.getElementById('display-valor-hora').textContent = formatCurrency(state.valorHoraVenda);
                 document.getElementById('display-custo-empresarial').textContent = formatCurrency(custoFixoEmpresarial);
                 document.getElementById('display-custo-pessoal').textContent = formatCurrency(custoFixoPessoal);
                 document.getElementById('display-faturamento').textContent = formatCurrency(state.faturamentoIdeal);
                 document.getElementById('tempo-nao-faturavel-label').textContent = `${(percNaoFaturavel * 100).toFixed(0)}%`;
                 document.getElementById('margem-lucro-label').textContent = `${(percMargemLucro * 100).toFixed(0)}%`;
-                
-                state.breakdown.custoEmpresarial = {
-                    title: 'Detalhamento do Custo Fixo Empresarial',
-                    content: `
-                        <div class="space-y-4">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Custos 100% Profissionais</h3>
-                                <ul class="list-disc list-inside text-gray-300">${custos100ProfissionaisList.map(item => `<li>${item.nome}: ${formatCurrency(item.valor)}</li>`).join('') || '<li>Nenhum</li>'}</ul>
-                                <p class="text-right font-bold mt-1">${formatCurrency(custos100Profissionais)}</p>
-                            </div>
-                            <hr class="border-gray-700">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Custos de Home Office</h3>
-                                <p>Total de despesas partilhadas: ${formatCurrency(totalCustosCompartilhados)}</p>
-                                <p>Fator de rateio (área): ${(fatorRateio * 100).toFixed(1)}%</p>
-                                <p class="text-right font-bold mt-1">${formatCurrency(custoHomeOffice)}</p>
-                            </div>
-                            <hr class="border-gray-700">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Depreciação de Equipamentos</h3>
-                                <ul class="list-disc list-inside text-gray-300">${depreciacaoList.map(item => `<li>${item.nome}: ${formatCurrency(item.valorMensal)}</li>`).join('') || '<li>Nenhum</li>'}</ul>
-                                <p class="text-right font-bold mt-1">${formatCurrency(totalDepreciacao)}</p>
-                            </div>
-                        </div>
-                    `
-                };
-                 state.breakdown.custoPessoal = {
-                    title: 'Detalhamento do Custo Fixo Pessoal',
-                    content: `
-                         <div class="space-y-4">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Total de Despesas</h3>
-                                <p>Soma de todas as despesas listadas na aba "Pessoal".</p>
-                                <p class="text-right font-bold mt-1">${formatCurrency(totalDespesasGeral)}</p>
-                            </div>
-                            <hr class="border-gray-700">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(-) Parcela Profissional (Home Office)</h3>
-                                <p>Parte das despesas partilhadas que é alocada como custo da empresa.</p>
-                                <p class="text-right font-bold mt-1">${formatCurrency(-custoHomeOffice)}</p>
-                            </div>
-                             <hr class="border-gray-600 my-4">
-                             <div class="flex justify-between items-center text-xl">
-                                <strong>Custo Pessoal Fixo Total:</strong>
-                                <strong class="text-blue-400">${formatCurrency(custoFixoPessoal)}</strong>
-                             </div>
-                        </div>
-                    `
-                };
-                state.breakdown.faturamentoIdeal = {
-                    title: 'Cálculo da Meta de Faturação Ideal',
-                     content: `
-                        <div class="space-y-4">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Remuneração Pessoal Ideal</h3>
-                                <ul class="list-disc list-inside text-gray-300">
-                                    <li>Custo Fixo Pessoal: ${formatCurrency(custoFixoPessoal)}</li>
-                                    <li>Ajuda de Custo (VR): ${formatCurrency(ajudaCusto)}</li>
-                                    <li>Meta de Lazer: ${formatCurrency(lazer)}</li>
-                                    <li>Meta de Investimento: ${formatCurrency(investimento)}</li>
-                                </ul>
-                                <p class="text-right font-bold mt-1">${formatCurrency(remuneracaoIdeal)}</p>
-                            </div>
-                            <hr class="border-gray-700">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(+) Custo Fixo Empresarial</h3>
-                                 <p class="text-right font-bold mt-1">${formatCurrency(custoFixoEmpresarial)}</p>
-                            </div>
-                             <hr class="border-gray-700">
-                             <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(=) Custo Total (antes do lucro)</h3>
-                                 <p class="text-right font-bold mt-1">${formatCurrency(custoTotalMensal)}</p>
-                            </div>
-                            <hr class="border-gray-700">
-                            <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">(&divide;) Fator de Lucro</h3>
-                                <p>O custo total representa ${100 - (percMargemLucro * 100)}% do preço final.</p>
-                                 <p class="text-right font-bold mt-1">&divide; ${(1 - percMargemLucro).toFixed(2)}</p>
-                            </div>
-                            <hr class="border-gray-600 my-4">
-                            <div class="flex justify-between items-center text-xl">
-                                <strong>Meta de Faturação Total:</strong>
-                                <strong class="text-blue-400">${formatCurrency(state.faturamentoIdeal)}</strong>
-                             </div>
-                        </div>
-                    `
-                };
-                 state.breakdown.valorHora = {
-                    title: 'Cálculo do Valor de Venda por Hora',
-                     content: `
-                        <div class="space-y-4">
-                           <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Cálculo das Horas Faturáveis</h3>
-                                <p>${horasSemana} horas/semana &times; 4.33 semanas = ${(horasSemana * 4.33).toFixed(1)} horas totais/mês</p>
-                                <p>(-) ${(percNaoFaturavel * 100).toFixed(0)}% de tempo não-faturável</p>
-                                <p class="text-right font-bold mt-1">${horasFaturaveisMes.toFixed(1)} horas faturáveis/mês</p>
-                           </div>
-                           <hr class="border-gray-700">
-                           <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Fórmula do Valor/Hora</h3>
-                                <p>Meta de Faturação Ideal / Horas Faturáveis</p>
-                                <p>${formatCurrency(state.faturamentoIdeal)} / ${horasFaturaveisMes.toFixed(1)}h</p>
-                                <p class="text-right font-bold mt-1">${formatCurrency(state.valorHoraVenda)}</p>
-                           </div>
-                           <hr class="border-gray-700">
-                           <div>
-                                <h3 class="font-semibold text-lg text-blue-400 mb-2">Detalhamento do Valor/Hora</h3>
-                                <ul class="list-disc list-inside text-gray-300">
-                                    <li>Para Custos da Empresa: ${formatCurrency(state.custoPorHora)}</li>
-                                    <li>Para Sua Remuneração: ${formatCurrency(state.remuneracaoPorHora)}</li>
-                                    <li>Para Lucro: ${formatCurrency(state.valorHoraVenda - state.custoPorHora - state.remuneracaoPorHora)}</li>
-                                </ul>
-                           </div>
-                        </div>
-                    `
-                };
-
-                calculateProject();
-                saveData();
+                calculateProject(); saveData();
             };
             
             const loadData = () => {
                 const data = JSON.parse(localStorage.getItem('freelancerAppData'));
-                if (!data) {
-                    createDespesaPessoalItem();
-                    createCustoProfissionalItem();
-                    createDepreciacaoItem();
-                    return;
-                }
-
+                if (!data) { createDespesaPessoalItem(); createCustoProfissionalItem(); createDepreciacaoItem(); return; }
                 if (data.despesasPessoais && data.despesasPessoais.length > 0) data.despesasPessoais.forEach(d => createDespesaPessoalItem(d.nome, d.valor, d.isCompartilhado)); else createDespesaPessoalItem();
                 if (data.custosProfissionais && data.custosProfissionais.length > 0) data.custosProfissionais.forEach(d => createCustoProfissionalItem(d.nome, d.valor)); else createCustoProfissionalItem();
                 if (data.depreciacao && data.depreciacao.length > 0) data.depreciacao.forEach(d => createDepreciacaoItem(d.nome, d.valor, d.vidaUtil)); else createDepreciacaoItem();
-
-                if (data.metas) {
-                    document.getElementById('ajuda-custo').value = data.metas.ajudaCusto || '';
-                    document.getElementById('lazer').value = data.metas.lazer || '';
-                    document.getElementById('investimento').value = data.metas.investimento || '';
-                }
-                if (data.parametros) {
-                    document.getElementById('area-escritorio').value = data.parametros.areaEscritorio || '';
-                    document.getElementById('area-total').value = data.parametros.areaTotal || '';
-                    document.getElementById('horas-semana').value = data.parametros.horasSemana || '40';
-                    document.getElementById('tempo-nao-faturavel').value = data.parametros.tempoNaoFaturavel || '30';
-                    document.getElementById('margem-lucro').value = data.parametros.margemLucro || '30';
-                }
+                if (data.metas) { document.getElementById('ajuda-custo').value = data.metas.ajudaCusto || ''; document.getElementById('lazer').value = data.metas.lazer || ''; document.getElementById('investimento').value = data.metas.investimento || ''; }
+                if (data.parametros) { document.getElementById('area-escritorio').value = data.parametros.areaEscritorio || ''; document.getElementById('area-total').value = data.parametros.areaTotal || ''; document.getElementById('horas-semana').value = data.parametros.horasSemana || '40'; document.getElementById('tempo-nao-faturavel').value = data.parametros.tempoNaoFaturavel || '30'; document.getElementById('margem-lucro').value = data.parametros.margemLucro || '30'; }
             };
             
             const init = () => {
                 loadData();
+                loadItemTypes(); 
+                renderItemTypesList();
                 createProjectTaskItem();
+                resetPackageForm();
                 
                 const staticInputs = ['ajuda-custo', 'lazer', 'investimento', 'area-escritorio', 'area-total', 'horas-semana', 'tempo-nao-faturavel', 'margem-lucro'];
-                staticInputs.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.addEventListener('input', calculateAll);
+                staticInputs.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', calculateAll); });
+                ['valor-hora', 'custo-empresarial', 'custo-pessoal', 'faturamento'].forEach(id => document.getElementById(`card-${id}`).addEventListener('click', () => showLightbox(id+'Ideal')));
+                
+                document.getElementById('add-new-item-type-btn').addEventListener('click', addNewItemType);
+                document.getElementById('restore-default-items-btn').addEventListener('click', restoreDefaultItems);
+                document.getElementById('item-types-list').addEventListener('click', e => {
+                    const deleteBtn = e.target.closest('.delete-item-type-btn');
+                    if (deleteBtn && !deleteBtn.disabled) deleteItemType(deleteBtn.dataset.itemName);
                 });
 
-                document.getElementById('card-valor-hora').addEventListener('click', () => showLightbox('valorHora'));
-                document.getElementById('card-custo-empresarial').addEventListener('click', () => showLightbox('custoEmpresarial'));
-                document.getElementById('card-custo-pessoal').addEventListener('click', () => showLightbox('custoPessoal'));
-                document.getElementById('card-faturamento').addEventListener('click', () => showLightbox('faturamentoIdeal'));
-
                 calculateAll();
+                populatePackageDropdown();
                 renderReports();
+                renderPricingPackages();
             };
             init();
+
+            document.getElementById('project-package-select').addEventListener('change', (e) => {
+                const packageId = e.target.value;
+                const taskList = document.getElementById('project-tasks-list');
+                if (!packageId) { state.currentSelectedPackage = null; taskList.innerHTML = ''; createProjectTaskItem(); calculateProject(); return; }
+                const pkg = (JSON.parse(localStorage.getItem('pricingPackages')) || []).find(p => p.id === parseInt(packageId));
+                if (pkg) {
+                    state.currentSelectedPackage = pkg;
+                    document.getElementById('project-buffer').value = pkg.params.buffer;
+                    taskList.innerHTML = '';
+                    if (pkg.items && pkg.items.length > 0) {
+                        pkg.items.forEach(item => {
+                            createProjectTaskItem(item.type, formatDecimalToTime((item.units || 1) * (item.hoursPerUnit || 0)));
+                        });
+                    } else { createProjectTaskItem(); }
+                    calculateProject();
+                } else { state.currentSelectedPackage = null; }
+            });
+
         });
     </script>
 </body>
 </html>
+
 
